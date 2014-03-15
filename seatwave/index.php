@@ -1,4 +1,9 @@
 <?php
+	function make_sw($stringy)
+	{
+	//	return '<http://seatwave.com/' . $stringy . '> ';
+		return htmlspecialchars('<http://seatwave.com/' . $stringy . '> ');
+	}
 	function getEvents($band)
 	{
 		$parameters = array();
@@ -29,7 +34,8 @@ if(strlen($raw_band))
 	$events = getEvents($band);
 	$prefix = htmlspecialchars("<http://www.seatwave.com/>", ENT_QUOTES);
 
-	$resp='@prefix sw: ' . $prefix . ' .<br/><br/>';
+//	$resp='@prefix sw: ' . $prefix . ' .<br/><br/>';
+	$resp='';
 	foreach ($events as $ev)
 	{
 		$id=$ev["Id"];
@@ -44,26 +50,36 @@ if(strlen($raw_band))
 		if ($ev["Currency"]=='GBP'){
 			$price*=$GBPTOEUR;
 		}
-		$resp.="sw:" . $id . " sw:artist \"" . $raw_band . "\" ;<br/>sw:date \"" . $date . "\" ;<br/>sw:venue \"" . $venue . "\" ;<br/>sw:town \"" . $town . "\" ;<br/>sw:tickets " . $tickets . " ;<br/>sw:price " . $price . " .<br/><br/>";
+
+
+		$resp.=make_sw($id) . make_sw("artist") . "\"" . $raw_band . "\" ; " . make_sw("date") . "\"" . $date . "\" ; " . make_sw("venue") . "\"" . $venue . "\" ; " . make_sw("town") . "\"" . $town . "\" ; " . make_sw("tickets") . $tickets . " ; " . make_sw("price") . $price . " . ";
+
 	}
-	echo $resp;
-/*
-for (var i=0; i<events.length; i++){
-                                var ev=events[i];
-                                var id=ev["Id"];
-                                var date=parseJsonDate(ev["Date"]);
-                                var venue=ev["VenueName"];
-                                var town=ev["Town"];
-                                var tickets=ev["TicketCount"];
-                                var price=ev["MinPrice"];
-                                if (ev["Currency"]=="GBP"){
-                                        var price=price*GBPTOEUR;
-                                }
-                                resp+="sw:" + id + " sw:artist \"" + raw_band + "\" ;\nsw:date \"" + date + "\" ;\nsw:venue \"" + venue + "\" ;\nsw:town \"" + town + "\" ;\nsw:tickets " + tickets + " ;\nsw:price " + price + " .\n\n"
-                        }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////
+	// Read stuff from sesame
+/*	
+	$sesame_url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST?query=' . rawurlencode('select ?o where {?s <http://seatwave.com/price> ?o } limit 1');
+	$triples = file_get_contents($sesame_url);
+	echo $triples;
 */
-//	echo sizeof($events).' events found';
+/////////////////////////////////////////////////////////////////////////////////////////
+/*
+	// Insert stuff into sesame
+	$url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST/statements';
+
+	// use key 'http' even if you send the request to https://...
+	$options = array(
+		'http' => array(
+	        'header'  => "Content-Type: text/turtle",
+        	'method'  => 'POST',
+	        'content' => htmlspecialchars_decode($resp)
+		),
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($url, false, $context);
+
+	var_dump($result);
+*/
 }
 ?>
