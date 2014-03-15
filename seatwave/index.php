@@ -4,6 +4,7 @@
 	//	return '<http://seatwave.com/' . $stringy . '> ';
 		return htmlspecialchars('<http://seatwave.com/' . $stringy . '> ');
 	}
+
 	function getEvents($band)
 	{
 		$parameters = array();
@@ -16,6 +17,22 @@
 		$json = json_decode($content, true);
 		return $json['Events'];
 	}
+
+	function getAddress($venue, $town)
+	{
+		$params=array();
+		$params[]='v=2014021';
+		$params[]='oauth_token=1L3VQUZJIZ3R1XA5OMOUHIM2PYIFIMLYBYEB0I1MQKKVYAUX';
+		$params[]='near='.$town.',NL';
+		$params[]='query='.$venue;
+
+		$fs_url = 'https://api.foursquare.com/v2/venues/explore?'.implode('&', $params);
+		$fs_resp = file_get_contents($fs_url);
+		$json = json_decode($fs_resp, true);
+		$fs_address=$json["response"]["groups"][0]["items"][0]["venue"]["location"]["address"];
+		return $fs_address;
+	}
+
 	$GBPTOEUR=1.20;
 	$raw_band = '';
 	if(isset($_POST['raw_band']))
@@ -32,7 +49,7 @@ if(strlen($raw_band))
 {
 	$band=str_replace(' ', '-', strtolower(trim($raw_band)));
 	$events = getEvents($band);
-	$prefix = htmlspecialchars("<http://www.seatwave.com/>", ENT_QUOTES);
+//	$prefix = htmlspecialchars("<http://www.seatwave.com/>", ENT_QUOTES);
 
 //	$resp='@prefix sw: ' . $prefix . ' .<br/><br/>';
 	$resp='';
@@ -53,7 +70,7 @@ if(strlen($raw_band))
 
 
 		$resp.=make_sw($id) . make_sw("artist") . "\"" . $raw_band . "\" ; " . make_sw("date") . "\"" . $date . "\" ; " . make_sw("venue") . "\"" . $venue . "\" ; " . make_sw("town") . "\"" . $town . "\" ; " . make_sw("tickets") . $tickets . " ; " . make_sw("price") . $price . " . ";
-
+		echo getAddress($venue,$town).'<br/>';
 	}
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -81,5 +98,7 @@ if(strlen($raw_band))
 
 	var_dump($result);
 */
+//////////////////////////////////////////////////////////////////////////////////////////
+
 }
 ?>
