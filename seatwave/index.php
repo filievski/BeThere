@@ -13,9 +13,19 @@
 		$parameters[] = 'where=netherlands';
 	
 		$url = 'http://api-sandbox.seatwave.com/v2/discovery/genre/1/events?'.implode('&', $parameters);
-		$content = file_get_contents($url);
-		$json = json_decode($content, true);
-		return $json['Events'];
+		try
+		{
+			$content = file_get_contents($url);
+			if($content !== false)
+			{
+				$json = json_decode($content, true);
+				return $json['Events'];
+			}
+		}
+		catch(Exception $e)
+		{
+		}
+		return array();
 	}
 
 	function getAddress($venue, $town)
@@ -27,10 +37,20 @@
 		$params[]='query='.$venue;
 
 		$fs_url = 'https://api.foursquare.com/v2/venues/explore?'.implode('&', $params);
-		$fs_resp = file_get_contents($fs_url);
-		$json = json_decode($fs_resp, true);
-		$fs_address=$json["response"]["groups"][0]["items"][0]["venue"]["location"]["address"];
-		return $fs_address;
+		try
+		{
+			$fs_resp = file_get_contents($fs_url);
+			if($fs_resp !== false)
+			{
+				$json = json_decode($fs_resp, true);
+				$fs_address = $json["response"]["groups"][0]["items"][0]["venue"]["location"]["address"];
+				return $fs_address;
+			}
+		}
+		catch(Exception $e)
+		{
+		}
+		return array();
 	}
 
 	$GBPTOEUR=1.20;

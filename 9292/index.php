@@ -18,17 +18,37 @@
 		$parameters[] = 'lang=nl-NL';
 	
 		$url = 'http://api.9292.nl/0.1/journeys?'.implode('&', $parameters);
-		$content = file_get_contents($url);
-		$json = json_decode($content, true);
-		return $json['journeys'];
+		try
+		{
+			$content = file_get_contents($url);
+			if($content !== false)
+			{
+				$json = json_decode($content, true);
+				return $json['journeys'];
+			}
+		}
+		catch(Exception $e)
+		{
+		}
+		return array();
 	}
 
 	function getSuggestions($query)
 	{
 		$url = 'http://9292.nl/suggest?q='.urlencode($query);
-		$content = file_get_contents($url);
-		$json = json_decode($content, true);
-		return $json['locations'];
+		try
+		{
+			$content = file_get_contents($url);
+			if($content !== false)
+			{
+				$json = json_decode($content, true);
+				return $json['locations'];
+			}
+		}
+		catch(Exception $e)
+		{
+		}
+		return array();
 	}
 
 	$locationFromSuggestion = '';
