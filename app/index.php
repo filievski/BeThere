@@ -1,159 +1,363 @@
-<?php
-	require_once('./app.services/9292.php');
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Be &#10148; There!</title>
-<style type="text/css">
-	* {
-		padding:0px;
-		margin:0px;
-		font-family:Arial, Helvetica, sans-serif;
-	}
-
-	h1 {
-		color:#646464;
-	}
-	h2 {
-		color:#36A4B8;
-	}
-
-	#container {
-		position:absolute;
-		width:100%;
-		height:100%;
-		background-image:url('images/pukkelpop.jpg');
-		background-size:cover;
-		background-repeat:no-repeat;
-	}
-		#header {
-			width:920px;
-			height:102px;
-			border:1px solid #646464;
-			border-bottom:none;
-			background-color:#FFFFFF;
-			margin:45px auto 0px auto;
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Be &#10148; There!</title>
+	<style type="text/css">
+		* {
+			padding:0px;
+			margin:0px;
+			font-family:Arial, Helvetica, sans-serif;
 		}
-			#logo {
-				width:300px;
-				height:72px;
-				background-image:url('images/logo.png');
-			}
-			#menu {
+	
+		h1 {
+			color:#646464;
+		}
+		h2 {
+			color:#36A4B8;
+			margin-top:25px;
+		}
+	
+		body {
+			background-image:url('images/pukkelpop.jpg');
+			background-size:cover;
+			background-repeat:no-repeat;
+		}
+	
+		#container {
+			position:absolute;
+			width:100%;
+			height:100%;
+		}
+			#header {
 				width:920px;
-				height:30px;
-				background-color:#36a4b8;
+				height:102px;
+				border:1px solid #646464;
+				border-bottom:none;
+				background-color:#FFFFFF;
+				margin:45px auto 0px auto;
 			}
-				#menu span, #menu a {
-					display:block;
-					float:left;
-					height:20px;
-					padding:5px 20px;
-					text-decoration:none;
-					text-transform:uppercase;
-					color:#FFFFFF;
+				#logo {
+					width:300px;
+					height:72px;
+					background-image:url('images/logo.png');
 				}
-				#menu a:hover {
-					background-color:#FFFFFF;
-					color:#36a4b8;
+				#menu {
+					width:920px;
+					height:30px;
+					background-color:#36a4b8;
 				}
-	#content {
-		width:870px;
-		margin:0 auto;
-		padding:25px;
-		background-color:#FFFFFF;
-		border:1px solid #646464;
-		border-top:none;
-		border-bottom:none;
-	}
-		#content #crumblebar {
+					#menu span, #menu a {
+						display:block;
+						float:left;
+						height:20px;
+						padding:5px 20px;
+						text-decoration:none;
+						text-transform:uppercase;
+						color:#FFFFFF;
+					}
+					#menu a:hover {
+						background-color:#FFFFFF;
+						color:#36a4b8;
+					}
+		#content {
+			width:870px;
+			margin:0 auto;
+			padding:25px;
+			background-color:#FFFFFF;
+			border:1px solid #646464;
+			border-top:none;
+			border-bottom:none;
+		}
+			#content #crumblebar {
+				font-size:12px;
+				text-transform:uppercase;
+				border-bottom:1px solid #CCCCCC;
+			}
+				#content #crumblebar span.divider {			
+					color:#666666;
+				}
+				#content #crumblebar span {
+					color:#333333;
+					padding:2px 5px 2px 5px;
+				}
+			#content #searchForm {
+				margin:10px 10px 10px 0px;
+			}
+			#content #searchForm input[type=text] {
+				border:1px solid #CCCCCC;
+				padding:3px;
+				height:20px;
+				width:200px;
+				margin-right:10px;
+			}
+			#content #searchForm input[type=button] {
+				border:1px solid #CCCCCC;
+				height:28px;
+				width:75px;
+				cursor:pointer;
+			}
+
+		#footer {
+			width:890px;
+			height:70px;
+			margin:0 auto;
+			padding:15px;
+			background-color:#FFFFFF;
+			border:1px solid #646464;
+			border-top:1px solid #CCCCCC;
 			font-size:12px;
-			text-transform:uppercase;
-			border-bottom:1px solid #CCCCCC;
 		}
-			#content #crumblebar span.divider {			
-				color:#666666;
+			#footer div {
+				float:left;
+				width:150px;
 			}
-			#content #crumblebar span {
-				color:#333333;
-				padding:2px 5px 2px 5px;
-			}
-	#footer {
-		width:890px;
-		height:70px;
-		margin:0 auto;
-		padding:15px;
-		background-color:#FFFFFF;
-		border:1px solid #646464;
-		border-top:1px solid #CCCCCC;
-		font-size:12px;
-	}
-		#footer div {
-			float:left;
-			width:150px;
+				#footer div span, #footer div a {
+					display:block;
+				}
+				#footer div span {
+					font-weight:bold;
+					color:#3F3F3F;
+				}
+				#footer div a {
+					text-decoration:none;
+					color:#6F6F6F;
+				}
+	
+	
+	
+	
+		.ticketOption div {
+			display:block;
+			border:1px solid #DDDDDD;
+			padding:10px;
+			margin:10px;
+			cursor:pointer;
 		}
-			#footer div span, #footer div a {
+			.ticketOption div span {
+				font-weight:bold;
 				display:block;
 			}
-			#footer div span {
+		.ticketOption input[type=radio] {
+			display:none;
+		}
+		.ticketOption :checked + div
+		{
+			border:2px solid #36A4B8;
+			padding:9px;
+		}
+	
+		.soldout {
+			color:#FF0000;
+			font-weight:bold;
+			text-transform:uppercase;
+			margin-left:10px;
+		}
+	
+		.travelOption {
+			display:block;
+			float:left;
+		}
+		.travelOption div {
+			border:1px solid #DDDDDD;
+			padding:10px;
+			margin:10px;
+			cursor:pointer;
+		}
+			.travelOption div span {
 				font-weight:bold;
-				color:#3F3F3F;
+				display:block;
 			}
-			#footer div a {
-				text-decoration:none;
-				color:#6F6F6F;
+		.travelOption input[type=radio] {
+			display:none;
+		}
+		.travelOption :checked + div
+		{
+			border:2px solid #36A4B8;
+			padding:9px;
+		}
+	
+		.clearer {
+			width:100%;
+			height:0px;
+			clear:both;
+		}
+	</style>
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript">
+		$(document).ready(	function()
+							{
+								$("#confirmSearch").click(	function()
+															{
+																var value = $("#search_value").val();
+																if(value)
+																{
+																	searchEvents(value);
+																}
+															});
+							});
+
+		var loadedEvents = new Array();
+		var eventRequest = null;
+		var routeRequest = null;
+
+		function searchEvents(value)
+		{
+			if(eventRequest)
+			{
+				eventRequest.abort();
+				eventRequest = null;
 			}
 
+			$("#event_results").html('<img src="images/ajax-loader.gif" />');
+			eventRequest = $.ajax({
+									type: "POST",
+									url: "asynch.php?command=getEvents",
+									data: {keywords: value},
+									dataType: "xml",
+									timeout: 5000,
+									success: function (responseText)
+																		{
+																			$("#event_results").html('');
+																			if($(responseText).find("error").length > 0)
+																			{
+																				$(responseText).find("error").each(	function()
+																													{
+																														alert($(this).find("message").text());
+																													});
+																			}
+																			else
+																			{
+																				$("#event_results").append('<h2>Events</h2>');
+																				$(responseText).children("results").children("event").each(	function()
+																															{
+																																var id = $(this).find("id").text();
+																																var eventGroupName = $(this).find("eventGroupName").text();
+																																var venueName = $(this).find("venue").find("name").text();
+																																var price = parseInt($(this).find("tickets").find("minPrice").text());
+																																var address = $(this).find("location").find("address").text();
+																																var city = $(this).find("location").find("city").text();
+																																var country = $(this).find("location").find("country").text();
+																																loadedEvents[id] = {
+																																						price: price,
+																																						location: {
+																																									address: address,
+																																									city: city,
+																																									country: country
+																																									}
+																																					};
 
+																																var ticketOption = $('<label/>').addClass("ticketOption");
+																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
+																																var titleSpan = $("<span/>").html("&#10148; " + eventGroupName + " at " + venueName);																																
+																																var div = $("<div/>").append(titleSpan).append('Minimum price: &euro;' + (price / 100).toFixed(2));
+																																ticketOption.append(radio);
+																																ticketOption.append(div);
+																																$("#event_results").append(ticketOption);
+																																div.click(	function()
+																																			{
+																																				openEvent(id);
+																																			});
+																															});
+																			}
+																		},
+									error:	function(request, status, err)
+											{
+												$("#event_results").html('');
+												if(status != "abort")
+												{
+													if(status == "timeout")
+													{
+														alert('The server is not responding. Please try again.');
+													}
+													else
+													{
+														alert('An unknown error has occured. Please try again.');
+													}
+												}
+											}
+								});
+		}
 
+		function openEvent(id)
+		{
+			if(routeRequest)
+			{
+				routeRequest.abort();
+				routeRequest = null;
+			}
 
-	.ticketOption div {
-		display:block;
-		border:1px solid #DDDDDD;
-		padding:10px;
-		margin:10px;
-		cursor:pointer;
-	}
-	.ticketOption input[type=radio] {
-		display:none;
-	}
-	.ticketOption :checked + div
-	{
-		border:2px solid #36A4B8;
-		padding:9px;
-	}
+			var openEvent = loadedEvents[id];
 
-	.soldout {
-		color:#FF0000;
-		font-weight:bold;
-		text-transform:uppercase;
-		margin-left:10px;
-	}
+			$("#route_results").html('<img src="images/ajax-loader.gif" />');
+			routeRequest = $.ajax({
+									type: "POST",
+									url: "asynch.php?command=getRoutes",
+									data: {address: openEvent.location.address},
+									dataType: "xml",
+									timeout: 5000,
+									success: function (responseText)
+																		{
+																			$("#route_results").html('');
+																			if($(responseText).find("error").length > 0)
+																			{
+																				$(responseText).find("error").each(	function()
+																													{
+																														alert($(this).find("message").text());
+																													});
+																			}
+																			else
+																			{
+																				$("#route_results").append('<h2>Routes</h2>');
+																				$(responseText).children("results").children("route").each(	function()
+																															{
+																																var titleHTML = '';
+																																var bodyHTML = '';
 
-	.travelOption div {
-		display:block;
-		border:1px solid #DDDDDD;
-		padding:10px;
-		margin:10px;
-		float:left;
-		cursor:pointer;
-	}
-	.travelOption input[type=radio] {
-		display:none;
-	}
-	.travelOption :checked + div
-	{
-		border:2px solid #36A4B8;
-		padding:9px;
-	}
+																																var type = $(this).find("type").text();
+																																var price = parseInt($(this).find("price").text());
+																																if(type == "car")
+																																{
+																																	titleHTML = 'By Car';
+																																	bodyHTML = 'Price: ' + (price / 100).toFixed(2) + '<br />';
+																																	bodyHTML += 'Total price : ' + ((openEvent.price + price) / 100).toFixed(2);
+																																}
+																																else
+																																{
+																																	titleHTML = 'Public Transport';
+																																	bodyHTML = 'Price: &euro;' + (price / 100).toFixed(2) + '<br />';
+																																	bodyHTML += 'Total price: &euro;' + ((openEvent.price + price) / 100).toFixed(2);
+																																}
 
-	.clearer {
-		width:100%;
-		height:0px;
-		clear:both;
-	}
-</style>
+																																var travelOption = $('<label/>').addClass("travelOption");
+																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'route');
+																																var titleSpan = $("<span/>").html(titleHTML);
+																																var div = $("<div/>").append(titleSpan).append(bodyHTML);
+																																travelOption.append(radio);
+																																travelOption.append(div);
+																																$("#route_results").append(travelOption);
+																															});
+																				$("#route_results").append('<div class="clearer"></div>');
+																			}
+																		},
+									error:	function(request, status, err)
+											{
+												$("#route_results").html('');
+												if(status != "abort")
+												{
+													if(status == "timeout")
+													{
+														alert('The server is not responding. Please try again.');
+													}
+													else
+													{
+														alert('An unknown error has occured. Please try again.');
+													}
+												}
+											}
+								});
+		}
+	</script>
 </head>
 <body>
 <div id="container">
@@ -168,84 +372,15 @@
 	</div>
     <div id="content">
     	<div id="crumblebar">
-        	<span>Search</span>
-        	<span class="divider">&#10148;</span>
-        	<span>This Week</span>
-        	<span class="divider">&#10148;</span>
-        	<span>13 results</span>
+        	<span class="divider">&#10148;</span>        
+        	<span>Search events</span>
         </div>
         <div id="body">
-        	<h1>Pinkpop</h1>
-            	<?php
-					$minPrice = 9000;
-					$maxPrice = 9000;
-				?>
-	            <h2>Tickets</h2>
-                	<label class="ticketOption"><input type="radio" name="ticket" disabled /><div>Weekend<span class="soldout">Sold out!</span></div></label>
-                	<label class="ticketOption"><input type="radio" name="ticket" disabled /><div>Saturday<span class="soldout">Sold out!</span></div></label>
-                	<label class="ticketOption"><input type="radio" name="ticket" /><div>Sunday &euro;90</div></label>
-                	<label class="ticketOption"><input type="radio" name="ticket" /><div>Monday &euro;90</div></label>
-                    <br />
-                    <br />
-    	        <h2>Travel</h2>
-					<?php
-                    $locations_from = service_9292::getSuggestions('Graaf Lodewijkstraat, Arnhem');
-                    $locations_to = service_9292::getSuggestions('Megaland, Landgraaf');
-                    $routes = service_9292::getRoutes($locations_from[0], $locations_to[0]);
-                    if(sizeof($routes))
-                    {
-						$minTravelPrice = NULL;
-						$maxTravelPrice = NULL;
-       	                echo '<b>Routes found:</b><br />';
-						foreach($routes as $route)
-						{
-	                        $departure = strtotime($route['departure']);
-    	                    $arrival = strtotime($route['arrival']);
-                        	$price = intval($route['fareInfo']['fullPriceCents']);
-
-							if($minTravelPrice === NULL)
-							{
-								$minTravelPrice = $price;
-							}
-							else if($price < $minTravelPrice)
-							{
-								$minTravelPrice = $price;
-							}
-
-							if($maxTravelPrice === NULL)
-							{
-								$maxTravelPrice = $price;
-							}
-							else if($price > $maxTravelPrice)
-							{
-								$maxTravelPrice = $price;
-							}
-
-        	                echo '<label class="travelOption">';
-								echo '<input type="radio" name="travel" />';
-	        	                echo '<div>';
-	            		            echo 'Departure: '.date("H:i", $departure).'<br />';
-    	    	        	        echo 'Departure: '.date("H:i", $arrival).'<br />';
-    		                	    echo 'Transfers: '.$route['numberOfChanges'].'<br />';
-		    	                    echo 'Price: &euro;'.number_format(($price / 100), 2);
-	        	                echo '</div>';									
-        	                echo '</label>';
-						}
-
-       	                echo '<div class="clearer"></div>';
-						$minPrice += $minTravelPrice;
-						$maxPrice += $maxTravelPrice;
-                    }
-                    else
-                    {
-                        echo 'No Routes found :(';
-                    }
-                    ?>
-                    <br />
-                    <br />
-        	    <h2>Total</h2>
-                	Minimum price: &euro;<?=number_format(($minPrice / 100), 2);?><br />
-                	Maximum price: &euro;<?=number_format(($maxPrice / 100), 2);?>                    
+	       	<div id="searchForm">
+    	    	<input type="text" id="search_value" value="Justin Timberlake" placeholder="Search for an artist" /><input id="confirmSearch" type="button" value="Search" />
+            </div>
+            <div id="event_results"></div>
+            <div id="route_results"></div>
         </div>
     </div>
     <div id="footer">
