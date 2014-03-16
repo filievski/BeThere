@@ -12,16 +12,14 @@
 
 	$result = sparql_query($query);
 	$fields = sparql_field_array($result);
+	echo sizeof($result);
 	while($row = sparql_fetch_array($result))
 	{
-	//  foreach($fields as $field)
-	//  {
 		$dbpedia=$fields[0];
 		$wikiid=$fields[1];
 		$birth=$fields[2];
 		$shortdesc=$fields[3];
 		$image=$fields[4];
-	//  }
 		$resp=make_db($row[$wikiid]) . make_db("dblink") . htmlspecialchars('<'.$row[$dbpedia].'>') . " ; " . make_db("birthdate") . "\"" . $row[$birth] . "\" ; " . make_db("shortdesc") . "\"" . $row[$shortdesc] . "\" ; " . make_db("image") . "\"" . $row[$image] . "\" . ";
 		echo $resp;
 
@@ -38,9 +36,10 @@
 			),
 		);
 		$context  = stream_context_create($options);
-		$result = file_get_contents($url, false, $context);
+		$res = file_get_contents($url, false, $context);
 
-		var_dump($result);
-
+		var_dump($res);
+		
 	}
+	
 ?>
