@@ -5,6 +5,12 @@
 		return htmlspecialchars('<http://seatwave.com/' . $stringy . '> ');
 	}
 
+	function make_fs($stringy)
+	{
+	//	return '<http://seatwave.com/' . $stringy . '> ';
+		return htmlspecialchars('<http://foursquare.com/' . $stringy . '> ');
+	}
+
 	function getEvents($band)
 	{
 		$parameters = array();
@@ -28,7 +34,7 @@
 		return array();
 	}
 
-	function getAddress($venue, $town)
+	function getVenueAddress($venue, $town)
 	{
 		$params=array();
 		$params[]='v=2014021';
@@ -43,8 +49,8 @@
 			if($fs_resp !== false)
 			{
 				$json = json_decode($fs_resp, true);
-				$fs_address = $json["response"]["groups"][0]["items"][0]["venue"]["location"]["address"];
-				return $fs_address;
+				$fs_venue = $json["response"]["groups"][0]["items"][0]["venue"]["location"]["address"];
+				return $fs_venue;
 			}
 		}
 		catch(Exception $e)
@@ -72,7 +78,8 @@ if(strlen($raw_band))
 //	$prefix = htmlspecialchars("<http://www.seatwave.com/>", ENT_QUOTES);
 
 //	$resp='@prefix sw: ' . $prefix . ' .<br/><br/>';
-	$resp='';
+	$resp_sw='';
+	$resp_fs='';
 	foreach ($events as $ev)
 	{
 		$id=$ev["Id"];
@@ -89,10 +96,12 @@ if(strlen($raw_band))
 		}
 
 
-		$resp.=make_sw($id) . make_sw("artist") . "\"" . $raw_band . "\" ; " . make_sw("date") . "\"" . $date . "\" ; " . make_sw("venue") . "\"" . $venue . "\" ; " . make_sw("town") . "\"" . $town . "\" ; " . make_sw("tickets") . $tickets . " ; " . make_sw("price") . $price . " . ";
-		echo getAddress($venue,$town).'<br/>';
-	}
+		$resp_sw.=make_sw($id) . make_sw("artist") . "\"" . $raw_band . "\" ; " . make_sw("date") . "\"" . $date . "\" ; " . make_sw("venue") . "\"" . $venue . "\" ; " . make_sw("town") . "\"" . $town . "\" ; " . make_sw("tickets") . $tickets . " ; " . make_sw("price") . $price . " . ";
+		$fs_address=getVenueAddress($venue,$town);
 
+		$resp_fs.=make_fs(rand(1,1000000)) . make_fs("name") . "\"" . $venue . "\" ; " . make_fs("address") . "\"" . $fs_address . "\" . ";
+	}
+	echo $resp_fs;
 //////////////////////////////////////////////////////////////////////////////////////////
 	// Read stuff from sesame
 /*	
@@ -101,7 +110,7 @@ if(strlen($raw_band))
 	echo $triples;
 */
 /////////////////////////////////////////////////////////////////////////////////////////
-/*
+
 	// Insert stuff into sesame
 	$url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST/statements';
 
@@ -110,14 +119,14 @@ if(strlen($raw_band))
 		'http' => array(
 	        'header'  => "Content-Type: text/turtle",
         	'method'  => 'POST',
-	        'content' => htmlspecialchars_decode($resp)
+	        'content' => htmlspecialchars_decode($resp_fs)
 		),
 	);
 	$context  = stream_context_create($options);
 	$result = file_get_contents($url, false, $context);
 
 	var_dump($result);
-*/
+
 //////////////////////////////////////////////////////////////////////////////////////////
 
 }
