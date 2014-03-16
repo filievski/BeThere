@@ -7,14 +7,15 @@
 		$parameters[] = 'avoidHighways=false';
 		$parameters[] = 'avoidTolls=false';
 		$parameters[] = 'sensor=false';
-		$parameters[] = 'origins='.$from;
-		$parameters[] = 'destinations='.$to;
-		
+		$parameters[] = 'origins='.urlencode ($from);
+		$parameters[] = 'destinations='.urlencode ($to);
+
 		//   http://maps.googleapis.com/maps/api/distancematrix/json?travelMode=driving&unitSystem=metric&avoidHighways=false&avoidTolls=false&origins=amsterdam&destinations=eindhoven
 		$url = 'http://maps.googleapis.com/maps/api/distancematrix/json?'.implode('&', $parameters);
+
 		$content = file_get_contents($url);
 		$json = json_decode($content, true);
-		//var_dump($json);
+		
 		return $json;
 	}
 
@@ -31,7 +32,7 @@
 	}
 
 	$fuelPrice = 1.5;
-	//http://www.umich.edu/~umtriswt/EDI_sales-weighted-mpg.html
+	//Typical Miles per gallon found at: http://www.umich.edu/~umtriswt/EDI_sales-weighted-mpg.html
 	$typicalMpg = 25.2;
 	$mpgToKmlConversionRate = 0.425143707;
 	$typicalKml = $typicalMpg*$mpgToKmlConversionRate;
@@ -47,7 +48,7 @@ if(strlen($locationFrom) && strlen($locationTo))
 	$distanceM = getDistanceMatrix($locationFrom, $locationTo);
 	$distance = $distanceM['rows'][0]['elements'][0]['distance']['text'];
 	echo $distance.' away'.'<br/>';
-	$price = $fuelPrice*($distance/$typicalKml);
+	$price = $fuelPrice*($distanceM['rows'][0]['elements'][0]['distance']['value']/$typicalKml)/1000;
 	echo "Costs ".$price ." euro".'<br/>';
 }
 
