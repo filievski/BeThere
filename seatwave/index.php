@@ -82,26 +82,34 @@ if(strlen($raw_band))
 	$resp_fs='';
 	foreach ($events as $ev)
 	{
-		$id=$ev["Id"];
+		$id="e".$ev["Id"];
 		$raw_date=$ev['Date'];
 		preg_match('/[0-9]+/', $raw_date, $matches);
 		$date=date('Y-m-d H:i:s', $matches[0]/1000);
 
 		$venue=$ev["VenueName"];
+		$venueId="v".$ev["VenueId"];
 		$town=$ev["Town"];
 		$tickets=$ev["TicketCount"];
 		$price=$ev["MinPrice"];
 		if ($ev["Currency"]=='GBP'){
 			$price*=$GBPTOEUR;
 		}
+		
 
-
-		$resp_sw.=make_sw($id) . make_sw("artist") . "\"" . $raw_band . "\" ; " . make_sw("date") . "\"" . $date . "\" ; " . make_sw("venue") . "\"" . $venue . "\" ; " . make_sw("town") . "\"" . $town . "\" ; " . make_sw("tickets") . $tickets . " ; " . make_sw("price") . $price . " . ";
+		$resp_sw.=make_sw($id) . "a " . make_sw("Event") . " ; " . 
+		make_sw("artist") . "\"" . $raw_band . "\" ; " . 
+		make_sw("date") . "\"" . $date . "\" ; " . 
+		make_sw("venue") . make_sw($venueId) . "; " .
+		make_sw("town") . "\"" . $town . "\" ; " . 
+		make_sw("tickets") . $tickets . " ; " . 
+		make_sw("price") . $price . " . " . 
+		make_sw($venueId) . make_sw("venueName") . "\"" . $venue . "\" . " ; 
 		$fs_address=getVenueAddress($venue,$town);
 
 		$resp_fs.=make_fs(rand(1,1000000)) . make_fs("name") . "\"" . $venue . "\" ; " . make_fs("address") . "\"" . $fs_address . "\" . ";
 	}
-//	echo $resp_fs;
+	echo $resp_sw;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 	// Insert stuff into sesame
