@@ -36,17 +36,17 @@
 					service_sesame::insertData($artist, $events);
 				}
 
-				foreach($events as $ev)
+				foreach($events as $event)
 				{
-					$venue = $ev['VenueName'];
-					$town = $ev['Town'];
+					$venue = $event['VenueName'];
+					$town = $event['Town'];
 					$address = service_foursquare::getAddress($venue, $town);
 
 					echo '<event>'."\n";
-						echo '<id>'.$ev['Id'].'</id>'."\n";
-						echo '<eventGroupName>'.$ev['EventGroupName'].'</eventGroupName>'."\n";
-						echo '<data><![CDATA['.print_r($ev, true).']]></data>'."\n";
-						echo '<date><![CDATA['.$ev['Date'].']]></date>'."\n";
+						echo '<id>'.$event['Id'].'</id>'."\n";
+						echo '<eventGroupName>'.$event['EventGroupName'].'</eventGroupName>'."\n";
+//						echo '<data><![CDATA['.print_r($event, true).']]></data>'."\n";
+						echo '<date><![CDATA['.$event['Date'].']]></date>'."\n";
 						echo '<venue>'."\n";
 							echo '<name><![CDATA['.$venue.']]></name>'."\n";
 							echo '<town><![CDATA['.$town.']]></town>'."\n";							
@@ -61,8 +61,8 @@
 							echo '<country>'.$address['country'].'</country>'."\n";
 						echo '</location>'."\n";							
 						echo '<tickets>'."\n";
-							echo '<count>'.$ev['TicketCount'].'</count>'."\n";
-							echo '<minPrice>'.intval(floatval($ev['MinPrice']) * 100).'</minPrice>'."\n";
+							echo '<count>'.$event['TicketCount'].'</count>'."\n";
+							echo '<minPrice>'.intval(floatval($event['MinPrice']) * 100).'</minPrice>'."\n";
 						echo '</tickets	>'."\n";
 					echo '</event>'."\n";
 				}
