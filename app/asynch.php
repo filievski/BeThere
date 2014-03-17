@@ -1,24 +1,40 @@
 <?php
+	set_time_limit(120);
+
+	require_once('./app.includes/sparqllib.php');
+
 	require_once('./app.services/9292.php');
 	require_once('./app.services/seatwave.php');
 	require_once('./app.services/foursquare.php');
 	require_once('./app.services/google_maps.php');
+	require_once('./app.services/dbpedia.php');
+	require_once('./app.services/sesame.php');
 
 	header("Content-type: text/xml; charset=utf-8");
 	echo '<?xml version="1.0"?>'."\n";
 	echo '<results>'."\n";
-	$metaData = '';
 
 	$command = (isset($_GET['command']) ? $_GET['command'] : '');
 	switch($command)
 	{
 		case 'getEvents':
-			$artist = (isset($_POST['keywords']) ? $_POST['keywords'] : '');
+			$artist = (isset($_POST['keywords']) ? $_POST['keywords'] : (isset($_GET['keywords']) ? $_GET['keywords'] : ''));
 
 			if(strlen($artist))
 			{
-				$GBPTOEUR = 1.20;
 				$events = service_seatwave::getEvents($artist);
+
+				for($i = 0; $i < sizeof($events); $i++)
+				{
+					$venue = $events[$i]['VenueName'];
+					$town = $events[$i]['Town'];
+					$events[$i]['fs_address'] = service_foursquare::getAddress($venue, $town);
+				}
+
+				if(sizeof($events))
+				{
+					service_sesame::insertData($artist, $events);
+				}
 
 				foreach($events as $ev)
 				{
@@ -53,17 +69,18 @@
 			}
 			break;
 		case 'getRoutes':
+			$location_start = (isset($_POST['location_start']) ? $_POST['location_start'] : '');
 			$address = (isset($_POST['address']) ? $_POST['address'] : '');
 			$city = (isset($_POST['city']) ? $_POST['city'] : '');
 			$country = (isset($_POST['country']) ? $_POST['country'] : '');
 
-			if(strlen($address))
+			if(strlen($location_start) && strlen($address))
 			{
 				$minTravelPrice = NULL;
 				$maxTravelPrice = NULL;
 
 				//Public transport
-				$locationFromQuery = 'Vrije Universiteit Amsterdam';
+				$locationFromQuery = $location_start;
 				$locationToQuery = $address.(strlen($city) ? ', ' : '').$city.(strlen($country) ? ', ' : '').$country;
 
 				$locations_from = service_9292::getSuggestions($locationFromQuery);

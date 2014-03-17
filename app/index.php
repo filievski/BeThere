@@ -17,17 +17,16 @@
 			color:#36A4B8;
 			margin-top:25px;
 		}
-	
-		body {
-			background-image:url('images/pukkelpop.jpg');
-			background-size:cover;
-			background-repeat:no-repeat;
-		}
-	
+
 		#container {
 			position:absolute;
 			width:100%;
 			height:100%;
+			background-image:url('images/pukkelpop.jpg');
+			background-size:cover;
+			background-repeat:no-repeat;
+			overflow-y:scroll;
+			overflow-x:hidden;
 		}
 			#header {
 				width:920px;
@@ -101,7 +100,7 @@
 		#footer {
 			width:890px;
 			height:70px;
-			margin:0 auto;
+			margin:0 auto 25px auto;
 			padding:15px;
 			background-color:#FFFFFF;
 			border:1px solid #646464;
@@ -163,6 +162,8 @@
 			padding:10px;
 			margin:10px;
 			cursor:pointer;
+			width:160px;
+			height:90px;
 		}
 			.travelOption div span {
 				font-weight:bold;
@@ -210,6 +211,7 @@
 			}
 
 			$("#event_results").html('<img src="images/ajax-loader.gif" />');
+			$("#route_results").html('');
 			eventRequest = $.ajax({
 									type: "POST",
 									url: "asynch.php?command=getEvents",
@@ -229,36 +231,50 @@
 																			else
 																			{
 																				$("#event_results").append('<h2>Events</h2>');
-																				$(responseText).children("results").children("event").each(	function()
-																															{
-																																var id = $(this).find("id").text();
-																																var eventGroupName = $(this).find("eventGroupName").text();
-																																var venueName = $(this).find("venue").find("name").text();
-																																var price = parseInt($(this).find("tickets").find("minPrice").text());
-																																var address = $(this).find("location").find("address").text();
-																																var city = $(this).find("location").find("city").text();
-																																var country = $(this).find("location").find("country").text();
-																																loadedEvents[id] = {
-																																						price: price,
-																																						location: {
-																																									address: address,
-																																									city: city,
-																																									country: country
-																																									}
-																																					};
-
-																																var ticketOption = $('<label/>').addClass("ticketOption");
-																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
-																																var titleSpan = $("<span/>").html("&#10148; " + eventGroupName + " at " + venueName);																																
-																																var div = $("<div/>").append(titleSpan).append('Minimum price: &euro;' + (price / 100).toFixed(2));
-																																ticketOption.append(radio);
-																																ticketOption.append(div);
-																																$("#event_results").append(ticketOption);
-																																div.click(	function()
-																																			{
-																																				openEvent(id);
-																																			});
-																															});
+																				if($(responseText).children("results").children("event").length == 0)
+																				{
+																					$("#event_results").html('<h2>No events found</h2>');
+																					$("#event_results").append('Unfortunately, no events were found.');
+																				}
+																				else
+																				{
+																					$(responseText).children("results").children("event").each(	function()
+																																{
+																																	var id = $(this).find("id").text();
+																																	var eventGroupName = $(this).find("eventGroupName").text();
+																																	var venueName = $(this).find("venue").find("name").text();
+																																	var price = parseInt($(this).find("tickets").find("minPrice").text());
+																																	var address = $(this).find("location").find("address").text();
+																																	var city = $(this).find("location").find("city").text();
+																																	var country = $(this).find("location").find("country").text();
+																																	loadedEvents[id] = {
+																																							price: price,
+																																							location: {
+																																										address: address,
+																																										city: city,
+																																										country: country
+																																										}
+																																						};
+	
+																																	var ticketOption = $('<label/>').addClass("ticketOption");
+																																	var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
+																																	var titleSpan = $("<span/>").html("&#10148; " + eventGroupName + " at " + venueName);																																
+																																	var div = $("<div/>").append(titleSpan).append('Minimum price: &euro;' + (price / 100).toFixed(2));
+																																	ticketOption.append(radio);
+																																	ticketOption.append(div);
+																																	$("#event_results").append(ticketOption);
+																																	div.click(	function()
+																																				{
+																																					var location = $("#search_location").val();
+																																					if(!location)
+																																					{
+																																						alert('Enter a location from which to travel');
+																																						return false;
+																																					}
+																																					openEvent(id, location);
+																																				});
+																																});
+																				}
 																			}
 																		},
 									error:	function(request, status, err)
@@ -279,7 +295,7 @@
 								});
 		}
 
-		function openEvent(id)
+		function openEvent(id, location)
 		{
 			if(routeRequest)
 			{
@@ -293,7 +309,7 @@
 			routeRequest = $.ajax({
 									type: "POST",
 									url: "asynch.php?command=getRoutes",
-									data: {address: openEvent.location.address},
+									data: {location_start: location, address: openEvent.location.address, city: openEvent.location.city, country: openEvent.location.country},
 									dataType: "xml",
 									timeout: 5000,
 									success: function (responseText)
@@ -318,16 +334,17 @@
 																																var price = parseInt($(this).find("price").text());
 																																if(type == "car")
 																																{
+																																	var distance = parseInt($(this).find("distance").text());
+
 																																	titleHTML = 'By Car';
-																																	bodyHTML = 'Price: ' + (price / 100).toFixed(2) + '<br />';
-																																	bodyHTML += 'Total price : ' + ((openEvent.price + price) / 100).toFixed(2);
+																																	bodyHTML += 'Distance: ' + distance + ' km<br />';
 																																}
 																																else
 																																{
 																																	titleHTML = 'Public Transport';
-																																	bodyHTML = 'Price: &euro;' + (price / 100).toFixed(2) + '<br />';
-																																	bodyHTML += 'Total price: &euro;' + ((openEvent.price + price) / 100).toFixed(2);
 																																}
+																																bodyHTML += 'Price: &euro;' + (price / 100).toFixed(2) + '<br />';
+																																bodyHTML += 'Total price: &euro;' + ((openEvent.price + price) / 100).toFixed(2);
 
 																																var travelOption = $('<label/>').addClass("travelOption");
 																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'route');
@@ -377,7 +394,9 @@
         </div>
         <div id="body">
 	       	<div id="searchForm">
-    	    	<input type="text" id="search_value" value="Justin Timberlake" placeholder="Search for an artist" /><input id="confirmSearch" type="button" value="Search" />
+    	    	<input type="text" id="search_location" value="" placeholder="Your location" />
+    	    	<input type="text" id="search_value" value="" placeholder="Search for an artist" />
+				<input id="confirmSearch" type="button" value="Search" />
             </div>
             <div id="event_results"></div>
             <div id="route_results"></div>
