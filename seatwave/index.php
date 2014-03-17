@@ -101,14 +101,7 @@ if(strlen($raw_band))
 
 		$resp_fs.=make_fs(rand(1,1000000)) . make_fs("name") . "\"" . $venue . "\" ; " . make_fs("address") . "\"" . $fs_address . "\" . ";
 	}
-	echo $resp_fs;
-//////////////////////////////////////////////////////////////////////////////////////////
-	// Read stuff from sesame
-/*	
-	$sesame_url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST?query=' . rawurlencode('select ?o where {?s <http://seatwave.com/price> ?o } limit 1');
-	$triples = file_get_contents($sesame_url);
-	echo $triples;
-*/
+//	echo $resp_fs;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 	// Insert stuff into sesame
@@ -119,13 +112,30 @@ if(strlen($raw_band))
 		'http' => array(
 	        'header'  => "Content-Type: text/turtle",
         	'method'  => 'POST',
-	        'content' => htmlspecialchars_decode($resp_fs)
+	        'content' => htmlspecialchars_decode($resp_sw . $resp_fs)
 		),
 	);
 	$context  = stream_context_create($options);
 	$result = file_get_contents($url, false, $context);
 
 	var_dump($result);
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+	// Read stuff from sesame
+	
+	$sesame_url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST?query=' . rawurlencode('select ?o where {?s <http://seatwave.com/price> ?o }');
+	$options = array(
+		'http' => array(
+	        'header'  => ["Content-Type: text/turtle","Accept:application/sparql-results+json"],//, */*;q=0.5",
+        	'method'  => 'GET',
+		),
+	);
+	$context  = stream_context_create($options);
+	$triples = file_get_contents($sesame_url, false, $context);
+
+	echo $triples;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
