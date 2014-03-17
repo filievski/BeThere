@@ -8,7 +8,8 @@
 
 	require_once('sparqllib.php');
 	$db = sparql_connect('http://dbpedia.org/sparql');
-	$query = 'SELECT * WHERE { ?artist foaf:name "Justin Timberlake"@en ; rdf:type dbpedia-owl:Artist ; dbpedia-owl:wikiPageID ?id ; dbpedia-owl:birthDate ?birthdate ; dbpprop:shortDescription ?shortdesc ; foaf:depiction ?image}';
+	$name="Justin Timberlake";
+	$query = 'SELECT * WHERE { ?artist foaf:name ' . $name . '@en ; rdf:type dbpedia-owl:Artist ; dbpedia-owl:wikiPageID ?id ; dbpedia-owl:birthDate ?birthdate ; dbpprop:shortDescription ?shortdesc ; foaf:depiction ?image}';
 
 	$result = sparql_query($query);
 	$fields = sparql_field_array($result);
@@ -20,7 +21,7 @@
 		$birth=$fields[2];
 		$shortdesc=$fields[3];
 		$image=$fields[4];
-		$resp=make_db($row[$wikiid]) . make_db("dblink") . htmlspecialchars('<'.$row[$dbpedia].'>') . " ; " . make_db("birthdate") . "\"" . $row[$birth] . "\" ; " . make_db("shortdesc") . "\"" . $row[$shortdesc] . "\" ; " . make_db("image") . "\"" . $row[$image] . "\" . ";
+		$resp=make_db($row[$wikiid]) . make_db("dblink") . htmlspecialchars('<'.$row[$dbpedia].'>') . " ; " . make_db("birthdate") . "\"" . $row[$birth] . "\" ; " . make_db("shortdesc") . "\"" . $row[$shortdesc] . "\" ; " . make_db("image") . "\"" . $row[$image] . "\" ; " . make_db("artistName") . "\"" . $name . "\" . ";
 		echo $resp;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////
