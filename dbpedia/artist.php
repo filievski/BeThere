@@ -9,7 +9,7 @@
 	require_once('sparqllib.php');
 	$db = sparql_connect('http://dbpedia.org/sparql');
 	$name="Justin Timberlake";
-	$query = 'SELECT * WHERE { ?artist foaf:name ' . $name . '@en ; rdf:type dbpedia-owl:Artist ; dbpedia-owl:wikiPageID ?id ; dbpedia-owl:birthDate ?birthdate ; dbpprop:shortDescription ?shortdesc ; foaf:depiction ?image}';
+	$query = 'SELECT * WHERE { ?artist foaf:name "' . $name . '"@en ; foaf:name ?name; rdf:type dbpedia-owl:Artist ; dbpedia-owl:wikiPageID ?id ; dbpedia-owl:birthDate ?birthdate ; dbpprop:shortDescription ?shortdesc ; foaf:depiction ?image}';
 
 	$result = sparql_query($query);
 	$fields = sparql_field_array($result);
@@ -37,9 +37,8 @@
 			),
 		);
 		$context  = stream_context_create($options);
-		$res = file_get_contents($url, false, $context);
-
-		var_dump($res);
+		//$res = file_get_contents($url, false, $context);
+		//var_dump($res);
 		
 	}
 	
