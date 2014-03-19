@@ -17,6 +17,29 @@
 	$command = (isset($_GET['command']) ? $_GET['command'] : '');
 	switch($command)
 	{
+		case 'getData':
+			$query = (isset($_POST['query']) ? $_POST['query'] : (isset($_GET['query']) ? $_GET['query'] : ''));
+			if(strlen($query))
+			{
+				$data = service_sesame::getData($query);
+	
+				$vars = array();
+				foreach($data->head->vars as $var)
+				{
+					$vars[] = $var;
+				}
+	
+				foreach($data->results->bindings as $binding)
+				{
+					echo "\t".'<result>'."\n";
+					foreach($vars as $var)
+					{
+						echo "\t"."\t".'<'.$var.'>'.$binding->$var->value.'</'.$var.'>'."\n";
+					}
+					echo "\t".'</result>'."\n";
+				}
+			}
+			break;
 		case 'getEvents':
 			$artist = (isset($_POST['keywords']) ? $_POST['keywords'] : (isset($_GET['keywords']) ? $_GET['keywords'] : ''));
 
@@ -36,11 +59,98 @@
 					service_sesame::insertData($artist, $events);
 				}
 
+
+				$query = '
+							PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+							PREFIX onto:<http://www.ontotext.com/>
+							PREFIX owl:<http://www.w3.org/2002/07/owl#>
+							PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
+							PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+							SELECT
+								DISTINCT
+									?resource
+							WHERE
+							{
+								?resource	rdf:type									<http://seatwave.com/resource/Event>.
+							}
+							';
+
+				$eventResources = service_sesame::getData($query);
+
+				foreach($eventResources->results->bindings as $eventResource)
+				{
+					$eventRes = $eventResource->resource->value;
+					$query = '
+								PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+								PREFIX onto:<http://www.ontotext.com/>
+								PREFIX owl:<http://www.w3.org/2002/07/owl#>
+								PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
+								PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	
+								SELECT
+									DISTINCT
+										?resource
+										(SAMPLE(?artist) as ?artist)
+										(SAMPLE(?artistName) as ?artistName)
+										(SAMPLE(?date) as ?date)
+										(SAMPLE(?venue) as ?venue)
+										(SAMPLE(?venueName) as ?venueName)
+										(SAMPLE(?venueAddress) as ?venueAddress)
+										(SAMPLE(?venueCity) as ?venueCity)
+										(SAMPLE(?venueCountry) as ?venueCountry)
+										(SAMPLE(?town) as ?town)
+										(SAMPLE(?tickets) as ?tickets)
+										(SAMPLE(?price) as ?price)
+								WHERE
+								{
+									<'.$eventRes.'>		<http://seatwave.com/resource/hasArtist>	?artist;
+														<http://seatwave.com/resource/date>			?date;
+														<http://seatwave.com/resource/venue>		?venue;
+														<http://seatwave.com/resource/town>			?town;
+														<http://seatwave.com/resource/tickets> 		?tickets;
+														<http://seatwave.com/resource/price>		?price.
+									?artist				<http://xmlns.com/foaf/0.1/name>			?artistName.
+									?venue				<http://foursquare.com/resource/name>		?venueName;
+														<http://foursquare.com/resource/address>	?venueAddress;
+														<http://foursquare.com/resource/city>		?venueCity;
+														<http://foursquare.com/resource/country>	?venueCountry.
+								}
+								GROUP BY ?resource
+								';
+	
+					$fields = array('date', 'town', 'tickets');
+	
+					$events = service_sesame::getData($query);
+//die(print_r($events, true));
+					foreach($events->results->bindings as $event)
+					{
+						echo '<event>'."\n";
+							foreach($fields as $field)
+							{
+								echo '<'.$field.'><![CDATA['.$event->$field->value.']]></'.$field.'>'."\n";
+							}
+							echo '<price>'.intval(floatval($event->price->value) * 100).'</price>'."\n";
+							echo '<artist>'."\n";
+//								echo '<resource><![CDATA['.$event->artist->value.']]></resource>'."\n";
+								echo '<name><![CDATA['.$event->artistName->value.']]></name>'."\n";							
+							echo '</artist>'."\n";
+							echo '<venue>'."\n";
+//								echo '<resource><![CDATA['.$event->venue->value.']]></resource>'."\n";
+								echo '<name><![CDATA['.$event->venueName->value.']]></name>'."\n";
+								echo '<address><![CDATA['.$event->venueAddress->value.']]></address>'."\n";
+								echo '<city><![CDATA['.$event->venueCity->value.']]></city>'."\n";
+								echo '<country><![CDATA['.$event->venueCountry->value.']]></country>'."\n";
+							echo '</venue>'."\n";
+						echo '</event>'."\n";
+					}
+				}
+/*
 				foreach($events as $event)
 				{
 					$venue = $event['VenueName'];
 					$town = $event['Town'];
-					$address = service_foursquare::getAddress($venue, $town);
+					$address = $event['fs_address'];
 
 					echo '<event>'."\n";
 						echo '<id>'.$event['Id'].'</id>'."\n";
@@ -66,6 +176,7 @@
 						echo '</tickets	>'."\n";
 					echo '</event>'."\n";
 				}
+*/
 			}
 			break;
 		case 'getRoutes':

@@ -3,6 +3,8 @@ define('GBPTOEUR', 1.20);
 
 class service_sesame
 {
+	private static $repos = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST';
+
 	private static function addPrefix($object, $prefix)
 	{
 		$url = NULL;
@@ -103,14 +105,16 @@ class service_sesame
 	private static function getAddressTriples($venueName, $address)
 	{
 		$resp = '';
-		$resp .= service_sesame::addPrefix(rand(1,1000000), 'fs').service_sesame::addPrefix("name", 'fs').'"'.$venueName.'";'."\n";
-		$resp .= service_sesame::addPrefix("address", 'fs').'"'.$address['address'].'".'."\n";
+		$resp .= service_sesame::addPrefix(str_replace(' ', '_', trim(trim($address['address'].' '.$address['city']).' '.$address['cc'])), 'fs').service_sesame::addPrefix("name", 'fs').'"'.$venueName.'";'."\n";
+		$resp .= service_sesame::addPrefix("address", 'fs').'"'.$address['address'].'";'."\n";
+		$resp .= service_sesame::addPrefix("city", 'fs').'"'.$address['city'].'";'."\n";
+		$resp .= service_sesame::addPrefix("country", 'fs').'"'.$address['country'].'".'."\n";
 		return $resp;
 	}
 
 	private static function insertTriples($triples)
 	{
-		$url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST/statements';
+		$url = service_sesame::$repos.'/statements';
 
 		//Use key 'http' even if you send the request to https://...
 		$options = array(
@@ -124,19 +128,10 @@ class service_sesame
 		return file_get_contents($url, false, $context);
 	}
 
-	public static function getData()
+	public static function getData($query)
 	{
-		$sesame_url = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST?query='.rawurlencode('select ?o where {?s <http://seatwave.com/price> ?o }');
-		$options = array(
-			'http' => array(
-		        'header'  => "Content-Type: text/turtle","Accept:application/sparql-results+json",//, */*;q=0.5",
-        		'method'  => 'GET',
-			),
-		);
-		$context  = stream_context_create($options);
-		$triples = file_get_contents($sesame_url, false, $context);
-
-		echo $triples;
+		$sesame_url = service_sesame::$repos.'?query='.urlencode($query).'&Accept=application/sparql-results%2Bjson';
+		return json_decode(file_get_contents($sesame_url));
 	}
 }
 ?>
