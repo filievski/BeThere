@@ -1,180 +1,220 @@
-		* {
-			padding:0px;
-			margin:0px;
-			font-family:Arial, Helvetica, sans-serif;
-		}
-	
-		h1 {
-			color:#646464;
-		}
-		h2 {
-			color:#36A4B8;
-			margin-top:25px;
-		}
+* {
+	padding:0px;
+	margin:0px;
+	font-family:Arial, Helvetica, sans-serif;
+}
 
-		#container {
-			position:absolute;
-			width:100%;
-			height:100%;
-			background-image:url('../images/pukkelpop.jpg');
-			background-size:cover;
-			background-repeat:no-repeat;
-			overflow-y:scroll;
-			overflow-x:hidden;
-		}
-			#header {
-				width:920px;
-				height:102px;
-				border:1px solid #646464;
-				border-bottom:none;
-				background-color:#FFFFFF;
-				margin:45px auto 0px auto;
-			}
-				#logo {
-					width:300px;
-					height:72px;
-					background-image:url('../images/logo.png');
-				}
-				#menu {
-					width:920px;
-					height:30px;
-					background-color:#36a4b8;
-				}
-					#menu span, #menu a {
-						display:block;
-						float:left;
-						height:20px;
-						padding:5px 20px;
-						text-decoration:none;
-						text-transform:uppercase;
-						color:#FFFFFF;
-					}
-					#menu a:hover {
-						background-color:#FFFFFF;
-						color:#36a4b8;
-					}
-		#content {
-			width:870px;
-			min-height:300px;
-			margin:0 auto;
-			padding:25px;
-			background-color:#FFFFFF;
-			border:1px solid #646464;
-			border-top:none;
-			border-bottom:none;
-		}
-			#content #crumblebar {
-				font-size:12px;
-				text-transform:uppercase;
-				border-bottom:1px solid #CCCCCC;
-			}
-				#content #crumblebar span.divider {			
-					color:#666666;
-				}
-				#content #crumblebar span {
-					color:#333333;
-					padding:2px 5px 2px 5px;
-				}
-			#content #searchForm {
-				margin:10px 10px 10px 0px;
-			}
-			#content #searchForm input[type=text] {
-				border:1px solid #CCCCCC;
-				padding:3px;
-				height:20px;
-				width:200px;
-				margin-right:10px;
-			}
-			#content #searchForm input[type=button] {
-				border:1px solid #CCCCCC;
-				height:28px;
-				width:75px;
-				cursor:pointer;
-			}
+h1 {
+	color:#646464;
+}
+h2 {
+	color:#36A4B8;
+	margin-top:25px;
+}
 
-		#footer {
-			width:890px;
-			height:70px;
-			margin:0 auto 25px auto;
-			padding:15px;
-			background-color:#FFFFFF;
-			border:1px solid #646464;
-			border-top:1px solid #CCCCCC;
-			font-size:12px;
+.loader {
+	width:31px;
+	height:31px;
+	margin:100px 0px 50px 435px;
+	background-image:url('../images/ajax-loader.gif');
+}
+
+#container {
+	position:absolute;
+	width:100%;
+	height:100%;
+	background-image:url('../images/pukkelpop.jpg');
+	background-size:cover;
+	background-repeat:no-repeat;
+	overflow-y:scroll;
+	overflow-x:hidden;
+}
+	#header {
+		width:920px;
+		height:102px;
+		border:1px solid #646464;
+		border-bottom:none;
+		background-color:#FFFFFF;
+		margin:45px auto 0px auto;
+	}
+		#logo {
+			width:300px;
+			height:72px;
+			background-image:url('../images/logo.png');
 		}
-			#footer div {
+		#menu {
+			width:920px;
+			height:30px;
+			background-color:#36a4b8;
+		}
+			#menu span, #menu a {
+				display:block;
 				float:left;
-				width:150px;
+				height:20px;
+				padding:5px 20px;
+				text-decoration:none;
+				text-transform:uppercase;
+				color:#FFFFFF;
 			}
-				#footer div span, #footer div a {
-					display:block;
-				}
-				#footer div span {
-					font-weight:bold;
-					color:#3F3F3F;
-				}
-				#footer div a {
-					text-decoration:none;
-					color:#6F6F6F;
-				}
-	
-	
-	
-	
-		.ticketOption div {
-			display:block;
-			border:1px solid #DDDDDD;
-			padding:10px;
-			margin:10px;
-			cursor:pointer;
-		}
-			.ticketOption div span {
-				font-weight:bold;
-				display:block;
+			#menu a:hover {
+				background-color:#FFFFFF;
+				color:#36a4b8;
 			}
-		.ticketOption input[type=radio] {
-			display:none;
+#content {
+	width:870px;
+	min-height:300px;
+	margin:0 auto;
+	padding:25px;
+	background-color:#FFFFFF;
+	border:1px solid #646464;
+	border-top:none;
+	border-bottom:none;
+}
+	#content #crumblebar {
+		font-size:12px;
+		text-transform:uppercase;
+		border-bottom:1px solid #CCCCCC;
+	}
+		#content #crumblebar span.divider {			
+			color:#666666;
 		}
-		.ticketOption :checked + div
-		{
-			border:2px solid #36A4B8;
-			padding:9px;
+		#content #crumblebar span {
+			color:#333333;
+			padding:2px 5px 2px 5px;
 		}
-	
-		.soldout {
-			color:#FF0000;
-			font-weight:bold;
-			text-transform:uppercase;
-			margin-left:10px;
-		}
-	
-		.travelOption {
-			display:block;
+	#content #searchForm {
+		margin:10px 10px 10px 0px;
+	}
+	#content #searchForm input[type=text] {
+		border:1px solid #CCCCCC;
+		padding:3px;
+		height:20px;
+		width:200px;
+		margin-right:10px;
+	}
+	#content #searchForm input[type=button] {
+		border:1px solid #CCCCCC;
+		height:28px;
+		width:75px;
+		cursor:pointer;
+	}
+	#event_results {
+		float:left;
+		width:450px;
+	}
+	#artist_results {
+		float:right;
+		width:350px;
+	}
+		#artist_results img {
 			float:left;
+			margin-right: 15px;
 		}
-		.travelOption div {
-			border:1px solid #DDDDDD;
-			padding:10px;
-			margin:10px;
-			cursor:pointer;
-			width:160px;
-			height:90px;
+	#results_clearer {
+		clear:both;
+	}
+#footer {
+	width:890px;
+	height:70px;
+	margin:0 auto 25px auto;
+	padding:15px;
+	background-color:#FFFFFF;
+	border:1px solid #646464;
+	border-top:1px solid #CCCCCC;
+	font-size:12px;
+}
+	#footer div {
+		float:left;
+		width:150px;
+	}
+		#footer div span, #footer div a {
+			display:block;
 		}
-			.travelOption div span {
-				font-weight:bold;
-				display:block;
-			}
-		.travelOption input[type=radio] {
-			display:none;
+		#footer div span {
+			font-weight:bold;
+			color:#3F3F3F;
 		}
-		.travelOption :checked + div
-		{
-			border:2px solid #36A4B8;
-			padding:9px;
+		#footer div a {
+			text-decoration:none;
+			color:#6F6F6F;
 		}
-	
-		.clearer {
-			width:100%;
-			height:0px;
-			clear:both;
-		}
+
+
+
+#route_results h3 {
+	float:left;
+	margin-left:20px;
+	font-size:14px;
+}
+.ticketOption div {
+	display:block;
+	border:1px solid #DDDDDD;
+	padding:10px;
+	margin:10px;
+	cursor:pointer;
+}
+.ticketOption:hover div {
+	border:1px solid #AAAAAA;
+}
+	.ticketOption div .ticketTitle {
+		font-weight:bold;
+		display:block;
+	}
+	.ticketOption div .ticketPrice {
+		margin-left:22px;
+	}
+.ticketOption input[type=radio] {
+	display:none;
+}
+.ticketOption :checked + div
+{
+	border:2px solid #36A4B8;
+	padding:9px;
+}
+
+.soldout {
+	color:#FF0000;
+	font-weight:bold;
+	text-transform:uppercase;
+	margin-left:10px;
+}
+
+.travelOption {
+	display:block;
+}
+.travelOption div {
+	border:1px solid #DDDDDD;
+	padding:10px;
+	margin:10px;
+	cursor:pointer;
+	height:80px;
+}
+.travelOption:hover div {
+	border:1px solid #AAAAAA;
+}
+	.travelOption div .routeInfoPrice {
+		float:left;
+		width:100px;
+		margin-right:20px;
+	}
+	.travelOption div .routeInfoOther {
+		float:left;
+		margin-right:20px;
+	}
+	.travelOption div .routeTitle {
+		font-weight:bold;
+	}
+.travelOption input[type=radio] {
+	display:none;
+}
+.travelOption :checked + div
+{
+	border:2px solid #36A4B8;
+	padding:9px;
+}
+
+.clearer {
+	width:100%;
+	height:0px;
+	clear:both;
+}

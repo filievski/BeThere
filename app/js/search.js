@@ -10,6 +10,8 @@ $(document).ready(	function()
 													});
 					});
 
+var global_timeout = 30000;
+
 var loadedEvents = new Array();
 var eventRequest = null;
 var routeRequest = null;
@@ -21,15 +23,15 @@ function searchEvents(value)
 		eventRequest.abort();
 		eventRequest = null;
 	}
-
-	$("#event_results").html('<img src="images/ajax-loader.gif" />');
+	$("#event_results").html('<div class="loader"></div>');
+	$("#artist_results").html('');
 	$("#route_results").html('');
 	eventRequest = $.ajax({
 							type: "POST",
 							url: "asynch.php?command=getEvents",
 							data: {keywords: value},
 							dataType: "xml",
-							timeout: 5000,
+							timeout: global_timeout,
 							success: function (responseText)
 																{
 																	$("#event_results").html('');
@@ -47,6 +49,7 @@ function searchEvents(value)
 																		{
 																			$("#event_results").html('<h2>No events found</h2>');
 																			$("#event_results").append('Unfortunately, no events were found.');
+																			$("#artist_results").html('');
 																		}
 																		else
 																		{
@@ -55,11 +58,15 @@ function searchEvents(value)
 																															var id = loadedEvents.length;
 																															var resource = $(this).children("resource").text();
 																															var name = $(this).children("artist").children("name").text();
+																															var birthDate = $(this).children("artist").children("birthDate").text();
+																															var desc = $(this).children("artist").children("desc").text();
+																															var image = $(this).children("artist").children("image").text();
 																															var venueName = $(this).children("venue").children("name").text();
 																															var price = parseInt($(this).children("price").text());
 																															var address = $(this).find("venue").find("address").text();
 																															var city = $(this).find("venue").find("city").text();
 																															var country = $(this).find("venue").find("country").text();
+
 																															loadedEvents[id] = {
 																																					resource: resource,
 																																					price: price,
@@ -72,11 +79,31 @@ function searchEvents(value)
 
 																															var ticketOption = $('<label/>').addClass("ticketOption");
 																															var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
-																															var titleSpan = $("<span/>").html("&#10148; " + name + " at " + venueName);																																
-																															var div = $("<div/>").append(titleSpan).append('Minimum price: &euro;' + (price / 100).toFixed(2));
+																															var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);																																
+																															var div = $("<div/>").append(titleSpan).append('<span class="ticketPrice">Price: &euro;' + (price * 0.01).toFixed(2) + '</span>');
 																															ticketOption.append(radio);
 																															ticketOption.append(div);
 																															$("#event_results").append(ticketOption);
+
+																															var artistHtml = "";
+																															if(image)
+																															{
+																																artistHtml += '<img src="' + image + '" style="width:100px;" />';
+																															}
+																															artistHtml += '<b>' + name + '</b>' + '<br />';
+																															if(birthDate)
+																															{
+																																artistHtml += '<b>Born:</b> ' + birthDate + '<br />';
+																															}
+																															if(desc)
+																															{
+																																artistHtml += desc;
+																															}
+																															if(artistHtml)
+																															{
+																																$("#artist_results").html("<h2>Artist</h2>");
+																																$("#artist_results").append(artistHtml);
+																															}
 																															div.click(	function()
 																																		{
 																																			var location = $("#search_location").val();
@@ -119,13 +146,13 @@ function openEvent(id, location)
 
 	var openEvent = loadedEvents[id];
 
-	$("#route_results").html('<img src="images/ajax-loader.gif" />');
+	$("#route_results").html('<div class="loader"></div>');
 	routeRequest = $.ajax({
 							type: "POST",
 							url: "asynch.php?command=getRoutes",
 							data: {location_start: location, address: openEvent.location.address, city: openEvent.location.city, country: openEvent.location.country},
 							dataType: "xml",
-							timeout: 5000,
+							timeout: global_timeout,
 							success: function (responseText)
 																{
 																	$("#route_results").html('');
@@ -139,6 +166,8 @@ function openEvent(id, location)
 																	else
 																	{
 																		$("#route_results").append('<h2>Routes</h2>');
+																		$("#route_results").append('<h3 style="width:100px;">Total Price</h3><h3>Type of transportation</h3>');
+																		$("#route_results").append('<div class="clearer"></div>');
 																		$(responseText).children("results").children("route").each(	function()
 																													{
 																														var titleHTML = '';
@@ -146,24 +175,28 @@ function openEvent(id, location)
 
 																														var type = $(this).find("type").text();
 																														var price = parseInt($(this).find("price").text());
-																														if(type == "car")
-																														{
-																															var distance = parseInt($(this).find("distance").text());
 
-																															titleHTML = 'By Car';
-																															bodyHTML += 'Distance: ' + distance + ' km<br />';
-																														}
-																														else
-																														{
-																															titleHTML = 'Public Transport';
-																														}
-																														bodyHTML += 'Price: &euro;' + (price * 0.01).toFixed(2) + '<br />';
-																														bodyHTML += 'Total price: &euro;' + ((openEvent.price + price) / 100).toFixed(2);
+																														bodyHTML += '<span class="routeInfoPrice">&euro;' + ((openEvent.price + price) * 0.01).toFixed(2) + '</span>';
+																														bodyHTML += '<span class="routeInfoOther">';
+																															if(type == "car")
+																															{
+																																var distance = parseInt($(this).find("distance").text());
+																																bodyHTML += '<span class="routeTitle">By Car</span><br />';
+																																bodyHTML += 'Distance: ' + distance + ' km<br />';
+																															}
+																															else
+																															{
+																																var transfers = $(this).find("transfers").text();
+																																bodyHTML += '<span class="routeTitle">Public Transport</span><br />';
+																																bodyHTML += 'Transfers: ' + transfers + '<br />';
+																															}
+																															bodyHTML += 'Travel time: <br />';
+																															bodyHTML += 'Price: &euro;' + (price * 0.01).toFixed(2);
+																														bodyHTML += '</span>';
 
 																														var travelOption = $('<label/>').addClass("travelOption");
 																														var radio = $("<input/>").attr('type', 'radio').attr('name', 'route');
-																														var titleSpan = $("<span/>").html(titleHTML);
-																														var div = $("<div/>").append(titleSpan).append(bodyHTML);
+																														var div = $("<div/>").append(bodyHTML);
 																														travelOption.append(radio);
 																														travelOption.append(div);
 																														$("#route_results").append(travelOption);

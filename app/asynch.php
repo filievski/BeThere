@@ -72,7 +72,9 @@
 									?resource
 							WHERE
 							{
-								?resource	rdf:type									<http://seatwave.com/resource/Event>.
+								?resource	rdf:type									<http://seatwave.com/resource/Event>;
+											<http://seatwave.com/resource/hasArtist>	?artist.
+								?artist		<http://xmlns.com/foaf/0.1/name>			"'.$artist.'";
 							}
 							';
 
@@ -93,6 +95,9 @@
 										?resource
 										(SAMPLE(?artist) as ?artist)
 										(SAMPLE(?artistName) as ?artistName)
+										(SAMPLE(?artistBirthDate) as ?artistBirthDate)
+										(SAMPLE(?artistDesc) as ?artistDesc)
+										(SAMPLE(?artistImage) as ?artistImage)
 										(SAMPLE(?date) as ?date)
 										(SAMPLE(?venue) as ?venue)
 										(SAMPLE(?venueName) as ?venueName)
@@ -110,7 +115,10 @@
 														<http://seatwave.com/resource/town>			?town;
 														<http://seatwave.com/resource/tickets> 		?tickets;
 														<http://seatwave.com/resource/price>		?price.
-									?artist				<http://xmlns.com/foaf/0.1/name>			?artistName.
+									?artist				<http://xmlns.com/foaf/0.1/name>			?artistName;
+														<http://dbpedia.org/page/birthdate>			?artistBirthDate;
+														<http://dbpedia.org/page/shortdesc>			?artistDesc;
+														<http://dbpedia.org/page/image>				?artistImage.
 									?venue				<http://foursquare.com/resource/name>		?venueName;
 														<http://foursquare.com/resource/address>	?venueAddress;
 														<http://foursquare.com/resource/city>		?venueCity;
@@ -122,7 +130,7 @@
 					$fields = array('date', 'town', 'tickets');
 	
 					$events = service_sesame::getData($query);
-//die(print_r($events, true));
+
 					foreach($events->results->bindings as $event)
 					{
 						echo '<event>'."\n";
@@ -133,7 +141,10 @@
 							echo '<price>'.intval(floatval($event->price->value) * 100).'</price>'."\n";
 							echo '<artist>'."\n";
 //								echo '<resource><![CDATA['.$event->artist->value.']]></resource>'."\n";
-								echo '<name><![CDATA['.$event->artistName->value.']]></name>'."\n";							
+								echo '<name><![CDATA['.$event->artistName->value.']]></name>'."\n";
+								echo '<birthDate><![CDATA['.$event->artistBirthDate->value.']]></birthDate>'."\n";
+								echo '<desc><![CDATA['.$event->artistDesc->value.']]></desc>'."\n";
+								echo '<image><![CDATA['.$event->artistImage->value.']]></image>'."\n";
 							echo '</artist>'."\n";
 							echo '<venue>'."\n";
 //								echo '<resource><![CDATA['.$event->venue->value.']]></resource>'."\n";
@@ -197,6 +208,7 @@
 				$locations_from = service_9292::getSuggestions($locationFromQuery);
 				$locations_to = service_9292::getSuggestions($locationToQuery);
 				$routes = service_9292::getRoutes($locations_from[0], $locations_to[0]);
+				$returnRoutes = array();
 				foreach($routes as $route)
 				{
 					$departure = strtotime($route['departure']);
@@ -221,13 +233,13 @@
 						$maxTravelPrice = $price;
 					}
 
-					echo '<route>'."\n";
-						echo '<type>public_transport</type>'."\n";
-						echo '<departure>'.$departure.'</departure>'."\n";
-						echo '<arrival>'.$arrival.'</arrival>'."\n";
-						echo '<transfers>'.$route['numberOfChanges'].'</transfers>'."\n";
-						echo '<price>'.$price.'</price>'."\n";							
-					echo '</route>'."\n";
+					$returnRoutes[] = array(
+												'type' => 'public_transport',
+												'departure' => $departure,
+												'arrival' => $arrival,
+												'transfers' => $route['numberOfChanges'],
+												'price' => $price,
+												);
 				}
 
 				//Car routes
@@ -255,10 +267,53 @@
 						$maxTravelPrice = $price;
 					}
 
+					$returnRoutes[] = array(
+												'type' => 'car',
+												'price' => $price,
+												'distance' => $distance
+												);
+				}
+
+				$returnRoutesSorted = array();
+				foreach($returnRoutes as $route)
+				{
+					$inserted = false;
+					if(sizeof($returnRoutesSorted))
+					{
+						$newPrice = intval(floatval($route['price']) * 100);
+						$i = 0;
+						while(($i < sizeof($returnRoutesSorted)) && (!$inserted))
+						{
+							$price = intval(floatval($returnRoutesSorted[$i]['price']) * 100);
+							if($price > $newPrice)
+							{
+								array_splice($returnRoutesSorted, $i, 0, array($route));
+								$inserted = true;
+							}
+							$i++;
+						}
+					}
+					if(!$inserted)
+					{
+						$returnRoutesSorted[] = $route;
+					}
+				}
+
+				foreach($returnRoutesSorted as $route)
+				{
 					echo '<route>'."\n";
-						echo '<type>car</type>'."\n";
-						echo '<distance>'.$distance.'</distance>'."\n";
-						echo '<price>'.$price.'</price>'."\n";							
+						echo '<type>'.$route['type'].'</type>'."\n";
+						if($route['type'] == 'public_transport')
+						{
+							echo '<departure>'.$route['departure'].'</departure>'."\n";
+							echo '<arrival>'.$route['arrival'].'</arrival>'."\n";
+							echo '<transfers>'.$route['transfers'].'</transfers>'."\n";
+						}
+						else
+						{
+							echo '<distance>'.$route['distance'].'</distance>'."\n";
+						}
+						echo '<price>'.$route['price'].'</price>'."\n";							
 					echo '</route>'."\n";
 				}
 

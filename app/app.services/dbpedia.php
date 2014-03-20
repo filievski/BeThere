@@ -14,7 +14,7 @@ class service_dbpedia
 									foaf:name					?name;
 									dbpedia-owl:birthDate		?birthdate;
 									dbpprop:shortDescription	?shortdesc;
-									foaf:depiction				?image
+									foaf:depiction				?image.
 					}';
 
 		$data = array();

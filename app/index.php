@@ -5,7 +5,7 @@
 	<title>Be &#10148; There!</title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
 	</style>
-	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="js/search.js"></script>
 </head>
 <body>
@@ -31,6 +31,8 @@
 				<input id="confirmSearch" type="button" value="Search" />
             </div>
             <div id="event_results"></div>
+            <div id="artist_results"></div>
+            <div id="results_clearer"></div>
             <div id="route_results"></div>
         </div>
     </div>
