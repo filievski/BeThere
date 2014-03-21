@@ -26,8 +26,8 @@
         </div>
         <div id="body">
 	       	<div id="searchForm">
-    	    	<input type="text" id="search_location" value="" placeholder="Your location" />
-    	    	<input type="text" id="search_value" value="" placeholder="Search for an artist" />
+    	    	<input type="text" id="search_location" value="<?=(isset($_GET['location']) ? $_GET['location'] : '');?>" placeholder="Your location" />
+    	    	<input type="text" id="search_value" value="<?=(isset($_GET['artist']) ? $_GET['artist'] : '');?>" placeholder="Search for an artist" />
 				<input id="confirmSearch" type="button" value="Search" />
             </div>
             <div id="event_results"></div>
@@ -38,31 +38,10 @@
     </div>
     <div id="footer">
     	<div>
-	    	<span>Events</span>
-			<a href="#">This week</a>
-			<a href="#">This Month</a>
-			<a href="#">This Year</a>
-			<a href="#">More ...</a>
-        </div>
-    	<div>
-	    	<span>Artists</span>
-			<a href="#">This week</a>
-			<a href="#">This Month</a>
-			<a href="#">This Year</a>
-			<a href="#">More ...</a>            
-        </div>
-    	<div>
-	    	<span>Music</span>
-			<a href="#">Rock</a>
-			<a href="#">Metal</a>
-			<a href="#">Dubstep</a>
-			<a href="#">More ...</a>
-        </div>
-    	<div>
-	    	<span>Art</span>
-			<a href="#">This week</a>
-			<a href="#">This Month</a>
-			<a href="#">This Year</a>
+	    	<span>Popular artists</span>
+			<a href="?artist=Justin%20Timberlake">Justin Timberlake</a>
+			<a href="?artist=Stromae">Stromae</a>
+			<a href="?artist=Cesar%20Zuiderwijk">Cesar Zuiderwijk</a>
 			<a href="#">More ...</a>
         </div>
     </div>

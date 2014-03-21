@@ -1,12 +1,15 @@
 $(document).ready(	function()
 					{
+						$("#search_value").keypress(	function(e)
+														{
+															if(e.which == 13)
+															{
+																searchEvents();
+															}
+														});
 						$("#confirmSearch").click(	function()
 													{
-														var value = $("#search_value").val();
-														if(value)
-														{
-															searchEvents(value);
-														}
+														searchEvents();
 													});
 					});
 
@@ -18,122 +21,127 @@ var routeRequest = null;
 
 function searchEvents(value)
 {
-	if(eventRequest)
+	var value = $("#search_value").val();
+
+	if(value)
 	{
-		eventRequest.abort();
-		eventRequest = null;
-	}
-	$("#event_results").html('<div class="loader"></div>');
-	$("#artist_results").html('');
-	$("#route_results").html('');
-	eventRequest = $.ajax({
-							type: "POST",
-							url: "asynch.php?command=getEvents",
-							data: {keywords: value},
-							dataType: "xml",
-							timeout: global_timeout,
-							success: function (responseText)
-																{
-																	$("#event_results").html('');
-																	if($(responseText).find("error").length > 0)
+		if(eventRequest)
+		{
+			eventRequest.abort();
+			eventRequest = null;
+		}
+		$("#event_results").html('<div class="loader"></div>');
+		$("#artist_results").html('');
+		$("#route_results").html('');
+		eventRequest = $.ajax({
+								type: "POST",
+								url: "asynch.php?command=getEvents",
+								data: {keywords: value},
+								dataType: "xml",
+								timeout: global_timeout,
+								success: function (responseText)
 																	{
-																		$(responseText).find("error").each(	function()
-																											{
-																												alert($(this).find("message").text());
-																											});
-																	}
-																	else
-																	{
-																		$("#event_results").append('<h2>Events</h2>');
-																		if($(responseText).children("results").children("event").length == 0)
+																		$("#event_results").html('');
+																		if($(responseText).find("error").length > 0)
 																		{
-																			$("#event_results").html('<h2>No events found</h2>');
-																			$("#event_results").append('Unfortunately, no events were found.');
-																			$("#artist_results").html('');
+																			$(responseText).find("error").each(	function()
+																												{
+																													alert($(this).find("message").text());
+																												});
 																		}
 																		else
 																		{
-																			$(responseText).children("results").children("event").each(	function()
-																														{
-																															var id = loadedEvents.length;
-																															var resource = $(this).children("resource").text();
-																															var name = $(this).children("artist").children("name").text();
-																															var birthDate = $(this).children("artist").children("birthDate").text();
-																															var desc = $(this).children("artist").children("desc").text();
-																															var image = $(this).children("artist").children("image").text();
-																															var venueName = $(this).children("venue").children("name").text();
-																															var price = parseInt($(this).children("price").text());
-																															var address = $(this).find("venue").find("address").text();
-																															var city = $(this).find("venue").find("city").text();
-																															var country = $(this).find("venue").find("country").text();
-
-																															loadedEvents[id] = {
-																																					resource: resource,
-																																					price: price,
-																																					location: {
-																																								address: address,
-																																								city: city,
-																																								country: country
-																																								}
-																																				};
-
-																															var ticketOption = $('<label/>').addClass("ticketOption");
-																															var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
-																															var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);																																
-																															var div = $("<div/>").append(titleSpan).append('<span class="ticketPrice">Price: &euro;' + (price * 0.01).toFixed(2) + '</span>');
-																															ticketOption.append(radio);
-																															ticketOption.append(div);
-																															$("#event_results").append(ticketOption);
-
-																															var artistHtml = "";
-																															if(image)
+																			$("#event_results").append('<h2>Events</h2>');
+																			if($(responseText).children("results").children("event").length == 0)
+																			{
+																				$("#event_results").html('<h2>No events found</h2>');
+																				$("#event_results").append('Unfortunately, no events were found.');
+																				$("#artist_results").html('');
+																			}
+																			else
+																			{
+																				$(responseText).children("results").children("event").each(	function()
 																															{
-																																artistHtml += '<img src="' + image + '" style="width:100px;" />';
-																															}
-																															artistHtml += '<b>' + name + '</b>' + '<br />';
-																															if(birthDate)
-																															{
-																																artistHtml += '<b>Born:</b> ' + birthDate + '<br />';
-																															}
-																															if(desc)
-																															{
-																																artistHtml += desc;
-																															}
-																															if(artistHtml)
-																															{
-																																$("#artist_results").html("<h2>Artist</h2>");
-																																$("#artist_results").append(artistHtml);
-																															}
-																															div.click(	function()
-																																		{
-																																			var location = $("#search_location").val();
-																																			if(!location)
+																																var id = loadedEvents.length;
+																																var resource = $(this).children("resource").text();
+																																var name = $(this).children("artist").children("name").text();
+																																var birthDate = $(this).children("artist").children("birthDate").text();
+																																var desc = $(this).children("artist").children("desc").text();
+																																var image = $(this).children("artist").children("image").text();
+																																var venueName = $(this).children("venue").children("name").text();
+																																var price = parseInt($(this).children("price").text());
+																																var address = $(this).find("venue").find("address").text();
+																																var city = $(this).find("venue").find("city").text();
+																																var country = $(this).find("venue").find("country").text();
+	
+																																loadedEvents[id] = {
+																																						resource: resource,
+																																						price: price,
+																																						location: {
+																																									address: address,
+																																									city: city,
+																																									country: country
+																																									}
+																																					};
+	
+																																var ticketOption = $('<label/>').addClass("ticketOption");
+																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
+																																var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);																																
+																																var div = $("<div/>").append(titleSpan).append('<span class="ticketPrice">Price: &euro;' + (price * 0.01).toFixed(2) + '</span>');
+																																ticketOption.append(radio);
+																																ticketOption.append(div);
+																																$("#event_results").append(ticketOption);
+	
+																																var artistHtml = "";
+																																if(image)
+																																{
+																																	artistHtml += '<img src="' + image + '" style="width:100px;" />';
+																																}
+																																artistHtml += '<b>' + name + '</b>' + '<br />';
+																																if(birthDate)
+																																{
+																																	artistHtml += '<b>Born:</b> ' + birthDate + '<br />';
+																																}
+																																if(desc)
+																																{
+																																	artistHtml += desc;
+																																}
+																																if(artistHtml)
+																																{
+																																	$("#artist_results").html("<h2>Artist</h2>");
+																																	$("#artist_results").append(artistHtml);
+																																}
+																																div.click(	function()
 																																			{
-																																				alert('Enter a location from which to travel');
-																																				return false;
-																																			}
-																																			openEvent(id, location);
-																																		});
-																														});
+																																				var location = $("#search_location").val();
+																																				if(!location)
+																																				{
+																																					alert('Enter a location from which to travel');
+																																					return false;
+																																				}
+																																				openEvent(id, location);
+																																			});
+																															});
+																			}
 																		}
-																	}
-																},
-							error:	function(request, status, err)
-									{
-										$("#event_results").html('');
-										if(status != "abort")
+																	},
+								error:	function(request, status, err)
 										{
-											if(status == "timeout")
+											$("#event_results").html('');
+											if(status != "abort")
 											{
-												alert('The server is not responding. Please try again.');
-											}
-											else
-											{
-												alert('An unknown error has occured. Please try again.');
+												if(status == "timeout")
+												{
+													alert('The server is not responding. Please try again.');
+												}
+												else
+												{
+													alert('An unknown error has occured. Please try again.');
+												}
 											}
 										}
-									}
-						});
+							});
+	}
 }
 
 function openEvent(id, location)
