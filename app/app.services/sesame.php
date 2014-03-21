@@ -1,13 +1,24 @@
 <?php
 define('GBPTOEUR', 1.20);
+define('STATIC', false);
 
 class service_sesame
 {
-	private static $repos = 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_TEST';
-
-	private static function addPrefix($object, $prefix)
+	private static function getRepos()
 	{
-		$url = NULL;
+		if(false)
+		{
+			return 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_FINAL_STATIC';
+		}
+		else
+		{
+			return 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_FINAL';
+		}
+	}
+
+	private static function addPrefix($object, $prefix = NULL)
+	{
+		$url = '';
 		switch(strtolower($prefix))
 		{
 			case 'db':
@@ -27,45 +38,60 @@ class service_sesame
 				$url = 'http://xmlns.com/foaf/0.1/';
 				break;
 		}
-		if($url)
-		{
-			$object = '<'.$url.$object.'>';
-		}
+		$object = '<'.$url.$object.'>';
 		return htmlspecialchars(' '.str_replace(' ', '_', $object).' ');
 	}
 
-	public static function insertData($artistQuery, $events)
+	public static function insertData($events)
 	{
 		$triples = '';
-
-		$artist = service_dbpedia::getArtistInfo($artistQuery);
-		if(sizeof($artist))
-		{
-			$artist = $artist[0];
-			$triples .= service_sesame::getArtistTriples($artist);
-		}
-		else
-		{
-			$artist = NULL;
-		}
-
+		$artists = array();
+		$return = array();
 		foreach($events as $event)
 		{
+			$artistQuery = $event['EventGroupName'];
+			$artist = NULL;
+			if(isset($artists[$artistQuery]))
+			{
+				$artist = $artists[$artistQuery];
+			}
+			else
+			{
+				$artist = service_dbpedia::getArtistInfo($artistQuery);
+				if(sizeof($artist))
+				{
+					$artist = $artist[0];
+					$artists[$artistQuery] = $artist;
+					$return[] = $artist['name'];
+					$triples .= service_sesame::getArtistTriples($artist);
+				}
+			}
 			$triples .= service_sesame::getEventTriples($artist, $event);
 			$triples .= service_sesame::getAddressTriples($event['VenueName'], $event['fs_address']);
 		}
 
 		service_sesame::insertTriples($triples);
+		return $return;
 	}
 
 	private static function getArtistTriples($artist)
 	{
 		$resp = '';
 		$resp .= htmlspecialchars($artist['dblink']);
-		$resp .= service_sesame::addPrefix('name', 'foaf').'"'.$artist['name'].'";'."\n";
-		$resp .= service_sesame::addPrefix("birthdate", 'db').'"'.$artist['birth'].'";'."\n";
-		$resp .= service_sesame::addPrefix("shortdesc", 'db').'"'.$artist['shortdesc'].'";'."\n";
-		$resp .= service_sesame::addPrefix("image", 'db').'"'.$artist['image'].'".'."\n";
+		$resp .= service_sesame::addPrefix('name', 'foaf').'"'.$artist['name'].'"'."\n";
+		if(isset($artist['birthdate']))
+		{
+			$resp .= ";\n".service_sesame::addPrefix("birthdate", 'db').'"'.$artist['birthdate'].'"';
+		}
+		if(isset($artist['shortdesc']))
+		{
+			$resp .= ";\n".service_sesame::addPrefix("shortdesc", 'db').'"'.$artist['shortdesc'].'"';
+		}
+		if(isset($artist['image']))
+		{
+			$resp .= ";\n".service_sesame::addPrefix("image", 'db').'"'.$artist['image'].'"';
+		}
+		$resp .= '.'."\n";
 
 		return $resp;
 	}
@@ -75,13 +101,13 @@ class service_sesame
 		$id = "e".$event["Id"];
 		$raw_date = $event['Date'];
 		preg_match('/[0-9]+/', $raw_date, $matches);
-		$date = date('Y-m-d H:i:s', ($matches[0] / 1000));
-
+		$date = date('d-m-Y H:i', ($matches[0] / 1000));
 		$venue = $event["VenueName"];
 		$venueId = "v".$event["VenueId"];
 		$town = $event["Town"];
 		$tickets = $event["TicketCount"];
 		$price = $event["MinPrice"];
+		$ticketURL = $event["SwURL"];
 		if($event["Currency"] == 'GBP')
 		{
 			$price *= GBPTOEUR;
@@ -95,7 +121,8 @@ class service_sesame
 		$resp .= service_sesame::addPrefix("venue", 'sw').service_sesame::addPrefix($venueId, 'sw').';'."\n";
 		$resp .= service_sesame::addPrefix("town", 'sw').'"'.$town.'";'."\n";
 		$resp .= service_sesame::addPrefix("tickets", 'sw').$tickets.";\n";
-		$resp .= service_sesame::addPrefix("price", 'sw').$price."."."\n";
+		$resp .= service_sesame::addPrefix("price", 'sw').$price.";"."\n";
+		$resp .= service_sesame::addPrefix("ticketurl", 'sw').service_sesame::addPrefix($ticketURL)."."."\n";
 		$resp .= service_sesame::addPrefix($venueId, 'sw').service_sesame::addPrefix("venueName", 'sw').'"'.$venue.'".'."\n";
 		$resp .= service_sesame::addPrefix($artist['name'], 'sw').' a '.service_sesame::addPrefix("artist", 'sw').';'."\n";
 		$resp .= service_sesame::addPrefix("artistName", 'sw').'"'.$artist['name'].'".'."\n";
@@ -114,7 +141,7 @@ class service_sesame
 
 	private static function insertTriples($triples)
 	{
-		$url = service_sesame::$repos.'/statements';
+		$url = service_sesame::getRepos().'/statements';
 
 		//Use key 'http' even if you send the request to https://...
 		$options = array(
@@ -130,7 +157,7 @@ class service_sesame
 
 	public static function getData($query)
 	{
-		$sesame_url = service_sesame::$repos.'?query='.urlencode($query).'&Accept=application/sparql-results%2Bjson';
+		$sesame_url = service_sesame::getRepos().'?query='.urlencode($query).'&Accept=application/sparql-results%2Bjson';
 		return json_decode(file_get_contents($sesame_url));
 	}
 }

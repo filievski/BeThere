@@ -13,10 +13,12 @@ class service_google_maps
 
 		$distanceM = service_google_maps::getDistanceMatrix($locationFrom, $locationTo);
 		$distance = $distanceM['rows'][0]['elements'][0]['distance']['text'];
+		$duration = (intval($distanceM['rows'][0]['elements'][0]['duration']['value']) / 60);
 		$price = (($fuelPrice * ($distanceM['rows'][0]['elements'][0]['distance']['value'] / $typicalKml)) / 10);
 
 		$routes[] = array(
 							'distance' => $distance,
+							'duration' => $duration,
 							'price' => $price
 							);
 

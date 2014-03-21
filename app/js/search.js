@@ -23,7 +23,7 @@ var lastQuery = null;
 
 function searchEvents(value)
 {
-	var value = $("#search_value").val();
+	var value = $("#search_value").val().trim();
 
 	if(value)
 	{
@@ -43,8 +43,9 @@ function searchEvents(value)
 		lastQuery = value;
 
 		$("#event_results").html('<div class="loader"></div>');
-		$("#artist_results").html('');
-		$("#route_results").html('');
+		$("#artist_results").hide();
+		$("#route_results").hide();
+		$("#ticket_results").hide();
 		eventRequest = $.ajax({
 								type: "POST",
 								url: "asynch.php?command=getEvents",
@@ -53,7 +54,9 @@ function searchEvents(value)
 								timeout: global_timeout,
 								success: function (responseText)
 																	{
+																		$("#event_results").hide();
 																		$("#event_results").html('');
+																		$("#artist_results").html('');
 																		if($(responseText).find("error").length > 0)
 																		{
 																			$(responseText).find("error").each(	function()
@@ -72,63 +75,74 @@ function searchEvents(value)
 																			}
 																			else
 																			{
+																				var artists = new Array();
 																				$(responseText).children("results").children("event").each(	function()
 																															{
 																																var id = loadedEvents.length;
 																																var resource = $(this).children("resource").text();
-																																var name = $(this).children("artist").children("name").text();
+																																var date = $(this).children("date").text();
+																																var name = $(this).children("artist").children("name").text().trim();
 																																var birthDate = $(this).children("artist").children("birthDate").text();
 																																var desc = $(this).children("artist").children("desc").text();
 																																var image = $(this).children("artist").children("image").text();
 																																var venueName = $(this).children("venue").children("name").text();
 																																var price = parseInt($(this).children("price").text());
-																																var address = $(this).find("venue").find("address").text();
-																																var city = $(this).find("venue").find("city").text();
-																																var country = $(this).find("venue").find("country").text();
+																																var address = $(this).children("venue").children("address").text();
+																																var city = $(this).children("venue").children("city").text();
+																																var country = $(this).children("venue").children("country").text();
+																																var url = $(this).children("url").text();
 	
 																																loadedEvents[id] = {
+																																						dateTime: date.replace(':', '-'),
 																																						resource: resource,
 																																						price: price,
 																																						location: {
 																																									address: address,
 																																									city: city,
 																																									country: country
-																																									}
+																																									},
+																																						ticketURL : url
 																																					};
 	
 																																var ticketOption = $('<label/>').addClass("ticketOption");
 																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
 																																var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);																																
-																																var div = $("<div/>").append(titleSpan).append('<span class="ticketPrice">Price: &euro;' + (price * 0.01).toFixed(2) + '</span>');
+																																var div = $("<div/>").append(titleSpan);
+																																div.append('<span class="datetime">' + date.replace(' ', '<br />') + '</span>');
+																																div.append('<span class="clearerLeft"></span>');
+																																div.append('<span class="ticketPrice">&euro;' + (price * 0.01).toFixed(2) + '</span>');
+																																div.append('<span class="clearer"></span>');
+
 																																ticketOption.append(radio);
 																																ticketOption.append(div);
 																																$("#event_results").append(ticketOption);
-	
-																																var artistHtml = "";
-																																if(image)
+
+																																if($.inArray(name, artists) == -1)
 																																{
-																																	artistHtml += '<img src="' + image + '" style="width:100px;" />';
+																																	$("#artist_results").append("<h2>" + name + "</h2>");
+																																	if(image)
+																																	{
+																																		$("#artist_results").append('<img src="' + image + '" style="max-height:100px;max-width:100px;" />');
+																																	}
+																																	if(birthDate)
+																																	{
+																																		$("#artist_results").append('<b>Born:</b> ' + birthDate + '<br />');
+																																	}
+																																	if(desc)
+																																	{
+																																		$("#artist_results").append(desc);
+																																	}
+																																	$("#artist_results").append('<div style="clear:both;"></div>');
+																																	artists[artists.length] = name;
 																																}
-																																artistHtml += '<b>' + name + '</b>' + '<br />';
-																																if(birthDate)
-																																{
-																																	artistHtml += '<b>Born:</b> ' + birthDate + '<br />';
-																																}
-																																if(desc)
-																																{
-																																	artistHtml += desc;
-																																}
-																																if(artistHtml)
-																																{
-																																	$("#artist_results").html("<h2>Artist</h2>");
-																																	$("#artist_results").append(artistHtml);
-																																}
+
 																																div.click(	function()
 																																			{
-																																				var location = $("#search_location").val();
+																																				var location = $("#search_location").val().trim();
 																																				if(!location)
 																																				{
 																																					alert('Enter a location from which to travel');
+																																					$("#search_location").focus();
 																																					return false;
 																																				}
 																																				openEvent(id, location);
@@ -136,6 +150,8 @@ function searchEvents(value)
 																															});
 																			}
 																			eventRequest = null;
+																			$("#event_results").fadeIn("slow");
+																			$("#artist_results").fadeIn("slow");
 																		}
 																	},
 								error:	function(request, status, err)
@@ -155,38 +171,55 @@ function searchEvents(value)
 										}
 							});
 	}
+	else
+	{
+		$("#search_value").focus();
+	}
 }
 
 var lastId = null;
 var lastLocation = null;
+var lastMinutes = null;
 
 function openEvent(id, location)
 {
+	minutes = parseInt($("#search_early").val().trim());
+
 	if(routeRequest)
 	{
 		routeRequest.abort();
 		routeRequest = null;
 	}
-	else if((id == lastId) && (location == lastLocation))
+	else if((id == lastId) && (location == lastLocation) && (minutes == lastMinutes))
 	{
+		$("#ticket_results").hide();
+		$("#ticket_results").fadeIn("slow");
 		$("#route_results").hide();
 		$("#route_results").fadeIn("slow");
 		return;
 	}
 	lastId = id;
 	lastLocation = location;
+	lastMinutes = minutes;
 
 	var openEvent = loadedEvents[id];
+
+	$("#ticket_results").hide();
+	$("#ticket_results").html('');
+	$("#ticket_results").append('<h2>Tickets</h2>');
+	$("#ticket_results").append('Click <a href="' + openEvent.ticketURL + '" target="_blank">here</a> to buy tickets');
+	$("#ticket_results").fadeIn("slow");
 
 	$("#route_results").html('<div class="loader"></div>');
 	routeRequest = $.ajax({
 							type: "POST",
 							url: "asynch.php?command=getRoutes",
-							data: {location_start: location, address: openEvent.location.address, city: openEvent.location.city, country: openEvent.location.country},
+							data: {location_start: location, address: openEvent.location.address, city: openEvent.location.city, country: openEvent.location.country, dateTime: openEvent.dateTime, minutes: minutes},
 							dataType: "xml",
 							timeout: global_timeout,
 							success: function (responseText)
 																{
+																	$("#route_results").hide();
 																	$("#route_results").html('');
 																	if($(responseText).find("error").length > 0)
 																	{
@@ -207,6 +240,7 @@ function openEvent(id, location)
 
 																														var type = $(this).find("type").text();
 																														var price = parseInt($(this).find("price").text());
+																														var duration = $(this).find("duration").text();
 
 																														bodyHTML += '<span class="routeInfoPrice">&euro;' + ((openEvent.price + price) * 0.01).toFixed(2) + '</span>';
 																														bodyHTML += '<span class="routeInfoOther">';
@@ -219,11 +253,14 @@ function openEvent(id, location)
 																															else
 																															{
 																																var transfers = $(this).find("transfers").text();
+																																var arrival = $(this).find("arrival").text();
+																																var arrivalInfo = arrival.split('T');
 																																bodyHTML += '<span class="routeTitle">Public Transport</span><br />';
 																																bodyHTML += 'Transfers: ' + transfers + '<br />';
+																																bodyHTML += 'Arrival: ' + arrivalInfo[1] + '<br />';
 																															}
-																															bodyHTML += 'Travel time: <br />';
-																															bodyHTML += 'Price: &euro;' + (price * 0.01).toFixed(2);
+																															bodyHTML += 'Travel time: ' + duration + '<br />';
+																															bodyHTML += ((type == "car") ? "Fuel price" : "price") + ': &euro;' + (price * 0.01).toFixed(2);
 																														bodyHTML += '</span>';
 
 																														var travelOption = $('<label/>').addClass("travelOption");
@@ -236,6 +273,7 @@ function openEvent(id, location)
 																		$("#route_results").append('<div class="clearer"></div>');
 																		routeRequest = null;
 																	}
+																	$("#route_results").fadeIn("slow");
 																},
 							error:	function(request, status, err)
 									{

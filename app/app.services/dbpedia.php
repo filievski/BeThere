@@ -8,36 +8,64 @@ class service_dbpedia
 						*
 					WHERE
 					{
-						?artist		foaf:name					"'.$artist.'"@en;
-									rdf:type					dbpedia-owl:Artist;
-									dbpedia-owl:wikiPageID		?id;
-									foaf:name					?name;
-									dbpedia-owl:birthDate		?birthdate;
-									dbpprop:shortDescription	?shortdesc;
-									foaf:depiction				?image.
+						{
+							?artist		foaf:name					?name;
+										rdf:type					dbpedia-owl:Artist.
+							OPTIONAL
+							{
+								?artist		dbpedia-owl:birthDate		?birthdate.
+							}
+							OPTIONAL
+							{
+								?artist		dbpprop:shortDescription	?shortdesc.
+							}
+							OPTIONAL
+							{
+								?artist		foaf:depiction		?image.
+							}
+							FILTER regex(?name, "'.$artist.'", "i")
+						}
+						UNION
+						{
+							?artist		foaf:name					?name;
+										rdf:type					dbpedia-owl:Band.
+							OPTIONAL
+							{
+								?artist		dbpedia-owl:birthDate		?birthdate.
+							}
+							OPTIONAL
+							{
+								?artist		dbpprop:shortDescription	?shortdesc.
+							}
+							OPTIONAL
+							{
+								?artist		foaf:depiction		?image.
+							}
+							FILTER regex(?name, "'.$artist.'", "i")
+						}
 					}';
 
 		$data = array();
 		$result = sparql_query($query);
-
-		$fields = sparql_field_array($result);
-		$name = $fields[2];
-		$dbpedia = $fields[0];
-		$wikiid = $fields[1];
-		$birth = $fields[3];
-		$shortdesc = $fields[4];
-		$image = $fields[5];
-
 		while($row = sparql_fetch_array($result))
 		{
-			$data[] = array(
-							'dblink' => ' <'.$row[$dbpedia].'> ',
-							'name' => $row[$name],
-							'wikiid' => $row[$wikiid],
-							'birth' => $row[$birth],
-							'shortdesc' => $row[$shortdesc],
-							'image' => $row[$image]
+			$record = array(
+							'dblink' => ' <'.$row['artist'].'> ',
+							'name' => $row['name'],
 							);
+			if(isset($row['birthdate']))
+			{
+				$record['birthdate'] = $row['birthdate'];
+			}
+			if(isset($row['shortdesc']))
+			{
+				$record['shortdesc'] = $row['shortdesc'];
+			}
+			if(isset($row['image']))
+			{
+				$record['image'] = $row['image'];
+			}
+			$data[] = $record;
 		}
 		return $data;
 	}

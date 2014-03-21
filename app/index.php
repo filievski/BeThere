@@ -4,7 +4,6 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Be &#10148; There!</title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
-	</style>
 	<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>    
     <script type="text/javascript" src="js/search.js"></script>
@@ -26,18 +25,27 @@
         	<span>Search events</span>
         </div>
         <div id="body">
-	       	<div id="searchForm">
-    	    	<input type="text" id="search_location" value="<?=(isset($_GET['location']) ? $_GET['location'] : '');?>" placeholder="Your location" />
-    	    	<input type="text" id="search_value" value="<?=(isset($_GET['artist']) ? $_GET['artist'] : '');?>" placeholder="Search for an artist" />
-				<input id="confirmSearch" type="button" value="Search" />
-            </div>
+	       	<div class="searchForm">
+				<input type="text" id="search_value" value="<?=(isset($_GET['artist']) ? $_GET['artist'] : '');?>" placeholder="Search for an artist" />
+				<input id="confirmSearch" type="button" value="Search" /><br /><br />
+				Traveling from: <input type="text" id="search_location" value="<?=(isset($_GET['location']) ? $_GET['location'] : '');?>" placeholder="Your location" />
+                arriving about <input type="text" id="search_early" value="<?=(isset($_GET['early']) ? $_GET['early'] : '30');?>" /> minutes early                
+			</div>
             <div id="event_results"></div>
             <div id="artist_results"></div>
             <div id="results_clearer"></div>
+            <div id="ticket_results"></div>
             <div id="route_results"></div>
         </div>
     </div>
     <div id="footer">
+    	<div>
+	    	<span>Popular Searches</span>
+			<a href="?artist=Amos">Amos</a>
+			<a href="?artist=Justin">Justin</a>
+			<a href="?artist=Zuiderwijk">Zuiderwijk</a>
+			<a href="#">More ...</a>
+        </div>
     	<div>
 	    	<span>Popular artists</span>
 			<a href="?artist=Justin%20Timberlake">Justin Timberlake</a>
