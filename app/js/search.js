@@ -19,6 +19,8 @@ var loadedEvents = new Array();
 var eventRequest = null;
 var routeRequest = null;
 
+var lastQuery = null;
+
 function searchEvents(value)
 {
 	var value = $("#search_value").val();
@@ -30,6 +32,16 @@ function searchEvents(value)
 			eventRequest.abort();
 			eventRequest = null;
 		}
+		else if(value == lastQuery)
+		{
+			$("#event_results").hide();
+			$("#artist_results").hide();
+			$("#event_results").fadeIn("slow");
+			$("#artist_results").fadeIn("slow");
+			return;
+		}
+		lastQuery = value;
+
 		$("#event_results").html('<div class="loader"></div>');
 		$("#artist_results").html('');
 		$("#route_results").html('');
@@ -123,6 +135,7 @@ function searchEvents(value)
 																																			});
 																															});
 																			}
+																			eventRequest = null;
 																		}
 																	},
 								error:	function(request, status, err)
@@ -144,6 +157,9 @@ function searchEvents(value)
 	}
 }
 
+var lastId = null;
+var lastLocation = null;
+
 function openEvent(id, location)
 {
 	if(routeRequest)
@@ -151,6 +167,14 @@ function openEvent(id, location)
 		routeRequest.abort();
 		routeRequest = null;
 	}
+	else if((id == lastId) && (location == lastLocation))
+	{
+		$("#route_results").hide();
+		$("#route_results").fadeIn("slow");
+		return;
+	}
+	lastId = id;
+	lastLocation = location;
 
 	var openEvent = loadedEvents[id];
 
@@ -210,6 +234,7 @@ function openEvent(id, location)
 																														$("#route_results").append(travelOption);
 																													});
 																		$("#route_results").append('<div class="clearer"></div>');
+																		routeRequest = null;
 																	}
 																},
 							error:	function(request, status, err)
