@@ -1,8 +1,10 @@
 <?php
 	set_time_limit(120);
 
+	//Include libraries
 	require_once('./app.includes/sparqllib.php');
 
+	//Include connectors for external data sources
 	require_once('./app.services/9292.php');
 	require_once('./app.services/seatwave.php');
 	require_once('./app.services/foursquare.php');
@@ -10,14 +12,17 @@
 	require_once('./app.services/dbpedia.php');
 	require_once('./app.services/sesame.php');
 
+	//Output XML
 	header("Content-type: text/xml; charset=utf-8");
 	echo '<?xml version="1.0"?>'."\n";
 	echo '<results>'."\n";
 
+	//Respond to requests comming in
 	$command = (isset($_GET['command']) ? $_GET['command'] : '');
 	switch($command)
 	{
 		case 'getData':
+			//Generic triple store querying
 			$query = (isset($_POST['query']) ? $_POST['query'] : (isset($_GET['query']) ? $_GET['query'] : ''));
 			if(strlen($query))
 			{
@@ -41,25 +46,30 @@
 			}
 			break;
 		case 'getEvents':
+			//Get events from keywords
 			$artist = (isset($_POST['keywords']) ? $_POST['keywords'] : (isset($_GET['keywords']) ? $_GET['keywords'] : ''));
 
 			if(strlen($artist))
 			{
+				//Get seatwave events
 				$events = service_seatwave::getEvents($artist);
 
 				for($i = 0; $i < sizeof($events); $i++)
 				{
 					$venue = $events[$i]['VenueName'];
 					$town = $events[$i]['Town'];
+					//Get Foursquare address for venue of each event
 					$events[$i]['fs_address'] = service_foursquare::getAddress($venue, $town);
 				}
 
 				if(sizeof($events))
 				{
+					//Insert events into triple store and get artists name
 					$artists = service_sesame::insertData($events);
 
 					if(sizeof($artists))
 					{
+						//Build query to retrieve events from triple store
 						$unions = array();
 						foreach($artists as $artist)
 						{
@@ -93,6 +103,7 @@
 
 						foreach($eventResources->results->bindings as $eventResource)
 						{
+							//For each event, retrieve information about artist and venue
 							$eventRes = $eventResource->resource->value;
 							$query = '
 										PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
@@ -156,6 +167,7 @@
 							{
 								if($event)
 								{
+									//Print events to XML
 									$date = DateTime::createFromFormat('d-m-Y H:i', $event->date->value);
 			
 									echo '<event>'."\n";
@@ -200,6 +212,7 @@
 			}
 			break;
 		case 'getRoutes':
+			//Get routes from location_start to address, city, country. Minutes indicates the number of minutes to be early of arrival
 			$location_start = (isset($_POST['location_start']) ? $_POST['location_start'] : '');
 			$address = (isset($_POST['address']) ? $_POST['address'] : '');
 			$city = (isset($_POST['city']) ? $_POST['city'] : '');
@@ -207,15 +220,17 @@
 			$arrival = (isset($_POST['dateTime']) ? $_POST['dateTime'] : '');
 			$minutes = (isset($_POST['minutes']) ? intval($_POST['minutes']) : 30);
 
+			//If location and at least address of destination of set
 			if(strlen($location_start) && strlen($address))
 			{
+				//Calculate minimum and maximum of travel
 				$minTravelPrice = NULL;
 				$maxTravelPrice = NULL;
 
-				//Public transport
 				$locationFromQuery = $location_start;
 				$locationToQuery = $address.(strlen($city) ? ', ' : '').$city.(strlen($country) ? ', ' : '').$country;
 
+				//Retrieve and use 9292's best guess for departure and arrival location
 				$locations_from = service_9292::getSuggestions($locationFromQuery);
 				$locations_to = service_9292::getSuggestions($locationToQuery);
 				$routes = service_9292::getRoutes($locations_from[0], $locations_to[0], $arrival, $minutes);
@@ -246,6 +261,7 @@
 						$maxTravelPrice = $price;
 					}
 
+					//Put in array for easy sorting
 					$returnRoutes[] = array(
 												'type' => 'public_transport',
 												'departure' => $departure,
@@ -256,7 +272,7 @@
 												);
 				}
 
-				//Car routes
+				//Get car routes from Google maps
 				$routes = service_google_maps::getRoutes($locationFromQuery, $locationToQuery);
 				foreach($routes as $route)
 				{
@@ -282,6 +298,7 @@
 						$maxTravelPrice = $price;
 					}
 
+					//Put in array for easy sorting
 					$returnRoutes[] = array(
 												'type' => 'car',
 												'price' => $price,
@@ -290,33 +307,46 @@
 												);
 				}
 
+				//Sort routes from lowest price to highest
 				$returnRoutesSorted = array();
+				//For each unsorted item
 				foreach($returnRoutes as $route)
 				{
 					$inserted = false;
+					//If items are present in the sorted array
 					if(sizeof($returnRoutesSorted))
 					{
+						//Get the price of the unsorted item
 						$newPrice = intval(floatval($route['price']) * 100);
 						$i = 0;
+						//Itterate over sorted items
 						while(($i < sizeof($returnRoutesSorted)) && (!$inserted))
 						{
+							//Get sorted item proce
 							$price = intval(floatval($returnRoutesSorted[$i]['price']) * 100);
+							//If the sorted price is higher then the unsorted price
 							if($price > $newPrice)
 							{
+								//Insert unsorted item before current sorted item
 								array_splice($returnRoutesSorted, $i, 0, array($route));
+
+								//End loop over sorted items
 								$inserted = true;
 							}
 							$i++;
 						}
 					}
+					//If no unsorted item was inserted, add to end of sorted array
 					if(!$inserted)
 					{
 						$returnRoutesSorted[] = $route;
 					}
 				}
 
+				//Output the sorted items to XML
 				foreach($returnRoutesSorted as $route)
 				{
+					//Convert duration to human readble format
 					$duration = intval($route['duration']);
 					$hours = 0;
 					if($duration > 61)

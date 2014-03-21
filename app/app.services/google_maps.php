@@ -11,11 +11,15 @@ class service_google_maps
 		$mpgToKmlConversionRate = 0.425143707;
 		$typicalKml = $typicalMpg * $mpgToKmlConversionRate;
 
+		//Get routes from Google
 		$distanceM = service_google_maps::getDistanceMatrix($locationFrom, $locationTo);
+
+		//Extract information
 		$distance = $distanceM['rows'][0]['elements'][0]['distance']['text'];
 		$duration = (intval($distanceM['rows'][0]['elements'][0]['duration']['value']) / 60);
 		$price = (($fuelPrice * ($distanceM['rows'][0]['elements'][0]['distance']['value'] / $typicalKml)) / 10);
 
+		//Return as simple array
 		$routes[] = array(
 							'distance' => $distance,
 							'duration' => $duration,
@@ -39,6 +43,7 @@ class service_google_maps
 		//   http://maps.googleapis.com/maps/api/distancematrix/json?travelMode=driving&unitSystem=metric&avoidHighways=false&avoidTolls=false&origins=amsterdam&destinations=eindhoven
 		$url = 'http://maps.googleapis.com/maps/api/distancematrix/json?'.implode('&', $parameters);
 
+		//Send request to Google
 		$content = file_get_contents($url);
 		$json = json_decode($content, true);
 		

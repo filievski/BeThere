@@ -1,12 +1,6 @@
 <?php
 class service_seatwave
 {
-	public static function make_sw($stringy)
-	{
-	//	return '<http://seatwave.com/' . $stringy . '> ';
-		return htmlspecialchars('<http://seatwave.com/' . $stringy . '> ');
-	}
-
 	public static function getEvents($band)
 	{
 		$band = str_replace(' ', '-', strtolower(trim($band)));

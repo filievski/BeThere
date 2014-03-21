@@ -3,7 +3,10 @@ class service_dbpedia
 {
 	public static function getArtistInfo($artist)
 	{
+		//Open SPARQL library
 		$db = sparql_connect('http://dbpedia.org/sparql');
+
+		//Construct query for retrieving artist information. Search for dbpedia-owl:Artist and dbpedia-owl:Band. Use optionals for various possibly unset fields
 		$query = '	SELECT
 						*
 					WHERE
@@ -46,7 +49,11 @@ class service_dbpedia
 					}';
 
 		$data = array();
+		
+		//Execute SPARQL query
 		$result = sparql_query($query);
+
+		//Convert to simple array
 		while($row = sparql_fetch_array($result))
 		{
 			$record = array(

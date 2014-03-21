@@ -1,23 +1,16 @@
 <?php
 define('GBPTOEUR', 1.20);
-define('STATIC', false);
 
 class service_sesame
 {
 	private static function getRepos()
 	{
-		if(false)
-		{
-			return 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_FINAL_STATIC';
-		}
-		else
-		{
-			return 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_FINAL';
-		}
+		return 'http://178.85.74.3:8080/openrdf-sesame/repositories/IWA_FINAL';
 	}
 
 	private static function addPrefix($object, $prefix = NULL)
 	{
+		//Add prefixes to string
 		$url = '';
 		switch(strtolower($prefix))
 		{
@@ -51,25 +44,32 @@ class service_sesame
 		{
 			$artistQuery = $event['EventGroupName'];
 			$artist = NULL;
+			//Locally cached DBPedia request
 			if(isset($artists[$artistQuery]))
 			{
 				$artist = $artists[$artistQuery];
 			}
 			else
 			{
+				//Get artist information from DBPedia
 				$artist = service_dbpedia::getArtistInfo($artistQuery);
 				if(sizeof($artist))
 				{
 					$artist = $artist[0];
-					$artists[$artistQuery] = $artist;
+					$artists[$artistQuery] = $artist; //events are often of same artist (found by same query). So cache requests' results.
 					$return[] = $artist['name'];
 					$triples .= service_sesame::getArtistTriples($artist);
 				}
 			}
+
+			//Convert local event data to triples
 			$triples .= service_sesame::getEventTriples($artist, $event);
+
+			//Convert local address data to triples
 			$triples .= service_sesame::getAddressTriples($event['VenueName'], $event['fs_address']);
 		}
 
+		//Add triples to triple store
 		service_sesame::insertTriples($triples);
 		return $return;
 	}
@@ -157,6 +157,7 @@ class service_sesame
 
 	public static function getData($query)
 	{
+		//Perform SPARQL query on triple store and return JSON
 		$sesame_url = service_sesame::getRepos().'?query='.urlencode($query).'&Accept=application/sparql-results%2Bjson';
 		return json_decode(file_get_contents($sesame_url));
 	}

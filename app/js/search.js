@@ -2,6 +2,7 @@ $(document).ready(	function()
 					{
 						$("#search_value").keypress(	function(e)
 														{
+															//If enter is pressed while search_value is in focus, submit
 															if(e.which == 13)
 															{
 																searchEvents();
@@ -13,12 +14,15 @@ $(document).ready(	function()
 													});
 					});
 
-var global_timeout = 30000;
+//Timeout of 2 seconds
+var global_timeout = 2 * 60 * 1000;
 
+//Keep track of loaded events and AJAX requests to be able to abort when needed
 var loadedEvents = new Array();
 var eventRequest = null;
 var routeRequest = null;
 
+//Cache request parameters to prevent duplicate subsequent requests
 var lastQuery = null;
 
 function searchEvents(value)
@@ -27,13 +31,17 @@ function searchEvents(value)
 
 	if(value)
 	{
+		//If a request is running
 		if(eventRequest)
 		{
+			//Abort it and start a new one
 			eventRequest.abort();
 			eventRequest = null;
 		}
+		//If the last requests finished and the same query is requested
 		else if(value == lastQuery)
 		{
+			//"Highlight" results by hiding them and letting them fade in
 			$("#event_results").hide();
 			$("#artist_results").hide();
 			$("#event_results").fadeIn("slow");
@@ -42,10 +50,13 @@ function searchEvents(value)
 		}
 		lastQuery = value;
 
+		//Show loader
 		$("#event_results").html('<div class="loader"></div>');
 		$("#artist_results").hide();
 		$("#route_results").hide();
 		$("#ticket_results").hide();
+
+		//Get events from back end
 		eventRequest = $.ajax({
 								type: "POST",
 								url: "asynch.php?command=getEvents",
@@ -54,9 +65,11 @@ function searchEvents(value)
 								timeout: global_timeout,
 								success: function (responseText)
 																	{
+																		//Hide result holders while we fill them
 																		$("#event_results").hide();
 																		$("#event_results").html('');
 																		$("#artist_results").html('');
+																		//If any errors are returned, show error messages
 																		if($(responseText).find("error").length > 0)
 																		{
 																			$(responseText).find("error").each(	function()
@@ -76,8 +89,11 @@ function searchEvents(value)
 																			else
 																			{
 																				var artists = new Array();
+
+																				//For each event
 																				$(responseText).children("results").children("event").each(	function()
 																															{
+																																//Get data
 																																var id = loadedEvents.length;
 																																var resource = $(this).children("resource").text();
 																																var date = $(this).children("date").text();
@@ -91,7 +107,8 @@ function searchEvents(value)
 																																var city = $(this).children("venue").children("city").text();
 																																var country = $(this).children("venue").children("country").text();
 																																var url = $(this).children("url").text();
-	
+
+																																//Keep loaded events in an array for searching for routes	
 																																loadedEvents[id] = {
 																																						dateTime: date.replace(':', '-'),
 																																						resource: resource,
@@ -104,9 +121,10 @@ function searchEvents(value)
 																																						ticketURL : url
 																																					};
 	
+																																//Create DOM elements for event information presentation
 																																var ticketOption = $('<label/>').addClass("ticketOption");
 																																var radio = $("<input/>").attr('type', 'radio').attr('name', 'ticket');
-																																var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);																																
+																																var titleSpan = $("<span/>").addClass('ticketTitle').html("&#10148; " + name + " at " + venueName);
 																																var div = $("<div/>").append(titleSpan);
 																																div.append('<span class="datetime">' + date.replace(' ', '<br />') + '</span>');
 																																div.append('<span class="clearerLeft"></span>');
@@ -117,6 +135,7 @@ function searchEvents(value)
 																																ticketOption.append(div);
 																																$("#event_results").append(ticketOption);
 
+																																//If event's artist was not printed earlier, print it
 																																if($.inArray(name, artists) == -1)
 																																{
 																																	$("#artist_results").append("<h2>" + name + "</h2>");
@@ -133,9 +152,12 @@ function searchEvents(value)
 																																		$("#artist_results").append(desc);
 																																	}
 																																	$("#artist_results").append('<div style="clear:both;"></div>');
+
+																																	//Add artist name to array to prevent double printing
 																																	artists[artists.length] = name;
 																																}
 
+																																//Apply click action on event DOM container element to allow for route searching
 																																div.click(	function()
 																																			{
 																																				var location = $("#search_location").val().trim();
@@ -156,6 +178,7 @@ function searchEvents(value)
 																	},
 								error:	function(request, status, err)
 										{
+											//Proccess any errors that might occur
 											$("#event_results").html('');
 											if(status != "abort")
 											{
@@ -177,6 +200,7 @@ function searchEvents(value)
 	}
 }
 
+//Cache request parameters to prevent duplicate subsequent requests
 var lastId = null;
 var lastLocation = null;
 var lastMinutes = null;
@@ -185,13 +209,17 @@ function openEvent(id, location)
 {
 	minutes = parseInt($("#search_early").val().trim());
 
+	//If a request is running
 	if(routeRequest)
 	{
+		//Abort it and start a new one
 		routeRequest.abort();
 		routeRequest = null;
 	}
+	//If the last requests finished and the same query is requested
 	else if((id == lastId) && (location == lastLocation) && (minutes == lastMinutes))
 	{
+		//"Highlight" results by hiding them and letting them fade in
 		$("#ticket_results").hide();
 		$("#ticket_results").fadeIn("slow");
 		$("#route_results").hide();
@@ -202,6 +230,7 @@ function openEvent(id, location)
 	lastLocation = location;
 	lastMinutes = minutes;
 
+	//Use local data from previous request
 	var openEvent = loadedEvents[id];
 
 	$("#ticket_results").hide();
@@ -210,6 +239,7 @@ function openEvent(id, location)
 	$("#ticket_results").append('Click <a href="' + openEvent.ticketURL + '" target="_blank">here</a> to buy tickets');
 	$("#ticket_results").fadeIn("slow");
 
+	//Show loader
 	$("#route_results").html('<div class="loader"></div>');
 	routeRequest = $.ajax({
 							type: "POST",
@@ -221,6 +251,8 @@ function openEvent(id, location)
 																{
 																	$("#route_results").hide();
 																	$("#route_results").html('');
+
+																	//If any errors are returned, show error messages
 																	if($(responseText).find("error").length > 0)
 																	{
 																		$(responseText).find("error").each(	function()
@@ -230,18 +262,19 @@ function openEvent(id, location)
 																	}
 																	else
 																	{
+																		//Present routes
 																		$("#route_results").append('<h2>Routes</h2>');
 																		$("#route_results").append('<h3 style="width:100px;">Total Price</h3><h3>Type of transportation</h3>');
 																		$("#route_results").append('<div class="clearer"></div>');
 																		$(responseText).children("results").children("route").each(	function()
 																													{
-																														var titleHTML = '';
-																														var bodyHTML = '';
-
+																														//Get data
 																														var type = $(this).find("type").text();
 																														var price = parseInt($(this).find("price").text());
 																														var duration = $(this).find("duration").text();
 
+																														//Compile HTML string for presentation
+																														var bodyHTML = '';
 																														bodyHTML += '<span class="routeInfoPrice">&euro;' + ((openEvent.price + price) * 0.01).toFixed(2) + '</span>';
 																														bodyHTML += '<span class="routeInfoOther">';
 																															if(type == "car")
@@ -263,11 +296,14 @@ function openEvent(id, location)
 																															bodyHTML += ((type == "car") ? "Fuel price" : "price") + ': &euro;' + (price * 0.01).toFixed(2);
 																														bodyHTML += '</span>';
 
+																														//Compose DOM container elements
 																														var travelOption = $('<label/>').addClass("travelOption");
 																														var radio = $("<input/>").attr('type', 'radio').attr('name', 'route');
 																														var div = $("<div/>").append(bodyHTML);
 																														travelOption.append(radio);
 																														travelOption.append(div);
+
+																														//Add to document
 																														$("#route_results").append(travelOption);
 																													});
 																		$("#route_results").append('<div class="clearer"></div>');
@@ -291,10 +327,4 @@ function openEvent(id, location)
 										}
 									}
 						});
-}
-
-function executeQuery(query)
-{
-	var query = 'select ?a ?b ?c where {?a ?b ?c } LIMIT 10'
-	
 }
