@@ -14,6 +14,8 @@ $(document).ready(	function()
 													});
 					});
 
+var asynchFile = 'asynch.php';
+
 //Timeout of 2 seconds
 var global_timeout = 2 * 60 * 1000;
 
@@ -59,7 +61,7 @@ function searchEvents(value)
 		//Get events from back end
 		eventRequest = $.ajax({
 								type: "POST",
-								url: "asynch.php?command=getEvents",
+								url: asynchFile + "?command=getEvents",
 								data: {keywords: value},
 								dataType: "xml",
 								timeout: global_timeout,
@@ -241,9 +243,10 @@ function openEvent(id, location)
 
 	//Show loader
 	$("#route_results").html('<div class="loader"></div>');
+	$("#route_results").fadeIn("slow");
 	routeRequest = $.ajax({
 							type: "POST",
-							url: "asynch.php?command=getRoutes",
+							url: asynchFile + "?command=getRoutes",
 							data: {location_start: location, address: openEvent.location.address, city: openEvent.location.city, country: openEvent.location.country, dateTime: openEvent.dateTime, minutes: minutes},
 							dataType: "xml",
 							timeout: global_timeout,
